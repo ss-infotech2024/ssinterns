@@ -261,6 +261,159 @@ export const createEmployee = async (req, res) => {
   }
 };
 
+
+// ---------------------------------------------------------------------
+// BATCH CREATE EMPLOYEES (Multiple at once)
+// ---------------------------------------------------------------------
+export const batchCreateEmployees = async (req, res) => {
+  try {
+    const employeesData = req.body;
+
+    // Check if input is an array
+    if (!Array.isArray(employeesData)) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must be an array of employees"
+      });
+    }
+
+    // Validate each employee
+    const errors = [];
+    const validEmployees = [];
+
+    for (let i = 0; i < employeesData.length; i++) {
+      const emp = employeesData[i];
+      const {
+        name, email, phone, department, position, salary, joiningDate,
+        status = "Active", employeeType = "Employee", loginId, password,
+      } = emp;
+
+      // Check required fields
+      if (!name || !email || !department || !position || !salary || !joiningDate || !loginId || !password) {
+        errors.push(`Employee ${i + 1} (${name || 'No Name'}): Missing required fields`);
+        continue;
+      }
+
+      // Check for duplicates in batch
+      const duplicateInBatch = validEmployees.some(e =>
+        e.email === email.trim().toLowerCase() || e.loginId === loginId.trim()
+      );
+
+      if (duplicateInBatch) {
+        errors.push(`Employee ${i + 1} (${name}): Email or Login ID duplicate in this batch`);
+        continue;
+      }
+
+      validEmployees.push({
+        ...emp,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone?.trim() || "0000000000",
+        department: Number(department),
+        position: position.trim(),
+        salary: Number(salary),
+        joiningDate: new Date(joiningDate),
+        status,
+        employeeType,
+        loginId: loginId.trim(),
+        password: encryptPassword(password),
+        pendingSalary: Number(salary),
+        paidSalary: 0,
+      });
+    }
+
+    if (errors.length > 0 && validEmployees.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "All employees have validation errors",
+        errors
+      });
+    }
+
+    // Check for existing employees in database
+    const existingEmails = await Employee.find({
+      email: { $in: validEmployees.map(e => e.email) }
+    }).select('email loginId');
+
+    const existingLoginIds = await Employee.find({
+      loginId: { $in: validEmployees.map(e => e.loginId) }
+    }).select('email loginId');
+
+    const existingEmailSet = new Set(existingEmails.map(e => e.email));
+    const existingLoginIdSet = new Set(existingLoginIds.map(e => e.loginId));
+
+    const finalEmployees = [];
+    const duplicateErrors = [];
+
+    for (const emp of validEmployees) {
+      if (existingEmailSet.has(emp.email)) {
+        duplicateErrors.push(`Email ${emp.email} already exists`);
+        continue;
+      }
+      if (existingLoginIdSet.has(emp.loginId)) {
+        duplicateErrors.push(`Login ID ${emp.loginId} already exists`);
+        continue;
+      }
+      finalEmployees.push(emp);
+    }
+
+    if (finalEmployees.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "All employees already exist in database",
+        errors: duplicateErrors
+      });
+    }
+
+    // Create employees in database
+    const createdEmployees = await Employee.insertMany(finalEmployees, {
+      ordered: false // Continue even if some fail
+    });
+
+    // Remove passwords from response
+    const employeesResponse = createdEmployees.map(emp => {
+      const empObj = emp.toObject();
+      delete empObj.password;
+      return empObj;
+    });
+
+    const successCount = createdEmployees.length;
+    const failedCount = employeesData.length - successCount;
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully created ${successCount} employees. ${failedCount > 0 ? `${failedCount} failed.` : ''}`,
+      count: successCount,
+      employees: employeesResponse,
+      summary: {
+        total: employeesData.length,
+        success: successCount,
+        failed: failedCount,
+        errors: errors.concat(duplicateErrors).slice(0, 10) // Limit errors in response
+      }
+    });
+
+  } catch (err) {
+    console.error("Batch create employees error:", err);
+
+    if (err.code === 11000) {
+      // Handle duplicate key error
+      const duplicates = err.writeErrors?.map(error => error.errmsg) || [];
+      return res.status(400).json({
+        success: false,
+        message: "Some employees have duplicate emails or login IDs",
+        duplicates
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+};
+
 // ---------------------------------------------------------------------
 // GET EMPLOYEE BY ID
 // ---------------------------------------------------------------------
