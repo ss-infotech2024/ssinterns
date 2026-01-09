@@ -167,8 +167,8 @@ const DashboardContent = () => {
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-white">
         <h1 className="text-3xl font-bold mb-2">Welcome back, {employee?.name?.split(" ")[0] || "Employee"}!</h1>
         <p className="text-purple-100">
-          {employee?.employeeType === "Intern" 
-            ? "Intern Dashboard - Limited Access Mode" 
+          {employee?.employeeType === "Intern"
+            ? "Intern Dashboard - Limited Access Mode"
             : "Here's your dashboard overview for today."}
         </p>
         <div className="flex flex-wrap gap-4 mt-4">
@@ -181,8 +181,8 @@ const DashboardContent = () => {
                     : employee?.department === 2 ? "Marketing"
                       : employee?.department === 3 ? "Development" : "Other"
                   : label === "Status" ? employee?.status || "Active"
-                  : label === "Type" ? employee?.employeeType || "Employee"
-                    : employee?.position || "Employee"}
+                    : label === "Type" ? employee?.employeeType || "Employee"
+                      : employee?.position || "Employee"}
               </p>
             </div>
           ))}
@@ -339,14 +339,13 @@ const DashboardEmployee = () => {
     { path: "/employee/dashboard/leaverequest", label: "Leave Request", icon: <SiGoogleforms /> },
     { path: "/employee/dashboard/leadmanagement", label: "Lead Management", icon: <FaUserPlus /> },
     { path: "/employee/dashboard/task", label: "My Tasks", icon: <SiGoogletasks /> },
-    { path: "/employee/dashboard/expense", label: "Expense", icon: <FaMoneyBillWave /> },
     { path: "/employee/dashboard/settings", label: "Settings", icon: <FiSettings /> },
   ];
 
   // Filter menu items based on employeeType
   const getFilteredMenuItems = () => {
     if (!employee) return allMenuItems;
-    
+
     // If employeeType is "Intern", only show specific routes
     if (employee.employeeType === "Intern") {
       return allMenuItems.filter(item => {
@@ -362,7 +361,7 @@ const DashboardEmployee = () => {
         return allowedRoutes.includes(item.path);
       });
     }
-    
+
     // For other employee types (Full-time, Part-time, etc.), show all routes
     return allMenuItems;
   };
@@ -372,7 +371,7 @@ const DashboardEmployee = () => {
   // Check if current route is allowed for the employee
   const isRouteAllowed = (path) => {
     if (!employee) return true;
-    
+
     if (employee.employeeType === "Intern") {
       const allowedRoutes = [
         "/employee/dashboard",
@@ -383,17 +382,17 @@ const DashboardEmployee = () => {
         "/employee/dashboard/task",
         "/employee/dashboard/settings",
       ];
-      
+
       // Handle nested routes
       if (path.startsWith("/employee/dashboard")) {
-        return allowedRoutes.some(allowedPath => 
+        return allowedRoutes.some(allowedPath =>
           path === allowedPath || path.startsWith(allowedPath + "/")
         );
       }
-      
+
       return allowedRoutes.includes(path);
     }
-    
+
     return true; // All routes allowed for non-interns
   };
 
@@ -530,7 +529,7 @@ const DashboardEmployee = () => {
           ) : (
             <Routes>
               <Route index element={<EmployeeData />} />
-              
+
               {/* Only render these routes if employee is not an intern or if route is allowed */}
               {!isIntern && (
                 <>
@@ -539,7 +538,7 @@ const DashboardEmployee = () => {
                   <Route path="QRstudentattendance" element={<QRStudentAttendance />} />
                 </>
               )}
-              
+
               {/* Always render these routes (allowed for interns) */}
               <Route path="attendance" element={<EmployeeAttendance />} />
               <Route path="leaverequest" element={<LeaveApplicationForm />} />
@@ -547,7 +546,7 @@ const DashboardEmployee = () => {
               <Route path="task" element={<TaskTracker />} />
               <Route path="expense" element={<Expense />} />
               <Route path="settings" element={<EmployeeSettings />} />
-              
+
               {/* Redirect any unauthorized routes */}
               <Route path="*" element={<Navigate to="/employee/dashboard" replace />} />
             </Routes>
