@@ -11,7 +11,8 @@ const StudentAttendance = () => {
   // ---- Google Sheet Config ----
   const SHEET_ID = "1O7hsQW3zZ75zziLvxTVGiVB5aA3ZGuQ2K97q5y2ICcE";
   const SHEET_NAME = "Attendance";
-  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+  const ORIGINAL_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+  const CSV_URL = `https://corsproxy.io/?${encodeURIComponent(ORIGINAL_CSV_URL)}`;
 
   // ---- Fetch Data ----
   useEffect(() => {

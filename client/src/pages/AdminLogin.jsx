@@ -126,8 +126,8 @@ const AdminLogin = () => {
               type="submit"
               disabled={loading}
               className={`w-full py-3.5 px-4 rounded-lg font-semibold text-white shadow-md transition-all duration-200 flex items-center justify-center ${loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:shadow-lg transform hover:-translate-y-0.5"
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:shadow-lg transform hover:-translate-y-0.5"
                 }`}
             >
               {loading ? (
@@ -207,7 +207,7 @@ const AdminLogin = () => {
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-500 mt-8">
-          © 2025 Your Company. All rights reserved. Admin access restricted.
+          © 2025 ssinfotech. All rights reserved. Admin access restricted.
         </p>
       </div>
     </div>

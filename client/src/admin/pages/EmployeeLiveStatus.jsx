@@ -47,23 +47,17 @@ const CloseIcon = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
-const CheckCircleIcon = ({ className = "w-5 h-5" }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
 const EmployeeManagement = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [statusSort, setStatusSort] = useState("all");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
-  const [isPaySalaryModalOpen, setIsPaySalaryModalOpen] = useState(false);
   const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
   const [success, setSuccess] = useState("");
   const [newEmployeeCredentials, setNewEmployeeCredentials] = useState(null);
@@ -78,6 +72,14 @@ const EmployeeManagement = () => {
     { id: 4, name: "HR" },
     { id: 5, name: "Finance" },
     { id: 6, name: "Operations" }
+  ];
+
+  const statusSortOptions = [
+    { value: "all", label: "All Status" },
+    { value: "online", label: "Online Only" },
+    { value: "offline", label: "Offline Only" },
+    { value: "online-first", label: "Online First" },
+    { value: "offline-first", label: "Offline First" }
   ];
 
   // === LIVE STATUS CHECK ===
@@ -126,8 +128,7 @@ const EmployeeManagement = () => {
       const statusMap = await fetchAllLiveStatus(list);
       const final = list.map(emp => ({
         ...emp,
-        isOnline: statusMap[emp._id] || false,
-        pendingSalary: emp.pendingSalary || 0
+        isOnline: statusMap[emp._id] || false
       }));
 
       setEmployees(final);
@@ -145,23 +146,18 @@ const EmployeeManagement = () => {
 
   // === MODAL STATES ===
   const [newEmployee, setNewEmployee] = useState({
-    name: "", email: "", phone: "", department: "", position: "", salary: "", joiningDate: "",
-    status: "Active", employeeType: "Employee", loginId: "", password: ""
+    name: "", email: "", phone: "", department: "", position: "", joiningDate: "",
+    loginId: "", password: ""
   });
 
   const [resetPasswordData, setResetPasswordData] = useState({
     employeeId: "", employeeName: "", newPassword: "", confirmPassword: ""
   });
 
-  const [paySalaryData, setPaySalaryData] = useState({
-    employeeId: "", employeeName: "", amount: "", month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(), notes: ""
-  });
-
   // === HANDLERS ===
   const handleAdd = async (e) => {
     e.preventDefault();
-    const required = ["name", "email", "department", "position", "salary", "joiningDate", "loginId", "password"];
+    const required = ["name", "email", "department", "position", "joiningDate", "loginId", "password"];
     if (required.some(f => !newEmployee[f])) return alert("Please fill all required fields");
     if (newEmployee.password.length < 6) return alert("Password must be at least 6 characters");
 
@@ -169,7 +165,7 @@ const EmployeeManagement = () => {
       const res = await fetch(`${API_URL}/employee/create/employee`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...newEmployee, salary: +newEmployee.salary, department: +newEmployee.department })
+        body: JSON.stringify({ ...newEmployee, department: +newEmployee.department })
       });
       if (res.ok) {
         setNewEmployeeCredentials({
@@ -183,7 +179,7 @@ const EmployeeManagement = () => {
         fetchEmployees();
         setSuccess("Employee added successfully!");
         setNewEmployee({
-          name: "", email: "", phone: "", department: "", position: "", salary: "", joiningDate: "",
+          name: "", email: "", phone: "", department: "", position: "", joiningDate: "",
           loginId: "", password: ""
         });
       } else {
@@ -201,7 +197,7 @@ const EmployeeManagement = () => {
       const res = await fetch(`${API_URL}/employee/update/${selectedEmployee._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...selectedEmployee, salary: +selectedEmployee.salary, department: +selectedEmployee.department })
+        body: JSON.stringify({ ...selectedEmployee, department: +selectedEmployee.department })
       });
       if (res.ok) {
         fetchEmployees();
@@ -245,32 +241,6 @@ const EmployeeManagement = () => {
     }
   };
 
-  const handlePaySalary = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${API_URL}/salary/pay/${paySalaryData.employeeId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          amount: +paySalaryData.amount,
-          month: paySalaryData.month,
-          year: paySalaryData.year,
-          notes: paySalaryData.notes
-        })
-      });
-      if (res.ok) {
-        setIsPaySalaryModalOpen(false);
-        fetchEmployees();
-        setSuccess("Salary paid successfully!");
-      } else {
-        alert("Failed to pay salary");
-      }
-    } catch (err) {
-      console.error("Pay salary error:", err);
-      alert("Error paying salary");
-    }
-  };
-
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this employee?")) return;
     try {
@@ -296,7 +266,7 @@ const EmployeeManagement = () => {
     alert("Credentials copied to clipboard!");
   };
 
-  // === FILTERED EMPLOYEES ===
+  // === FILTERED & SORTED EMPLOYEES ===
   const filtered = employees
     .filter(emp => {
       const search = searchTerm.toLowerCase();
@@ -305,6 +275,27 @@ const EmployeeManagement = () => {
         emp.email?.toLowerCase().includes(search) ||
         emp.position?.toLowerCase().includes(search)
       ) && (departmentFilter === "all" || emp.department === +departmentFilter);
+    })
+    .filter(emp => {
+      switch (statusSort) {
+        case "online":
+          return emp.isOnline === true;
+        case "offline":
+          return emp.isOnline === false;
+        case "all":
+        default:
+          return true;
+      }
+    })
+    .sort((a, b) => {
+      switch (statusSort) {
+        case "online-first":
+          return (b.isOnline ? 1 : 0) - (a.isOnline ? 1 : 0);
+        case "offline-first":
+          return (a.isOnline ? 1 : 0) - (b.isOnline ? 1 : 0);
+        default:
+          return 0;
+      }
     });
 
   const onlineCount = employees.filter(e => e.isOnline).length;
@@ -357,7 +348,7 @@ const EmployeeManagement = () => {
             <h2 className="text-2xl font-bold">All Employees</h2>
             <div className="flex gap-3 flex-wrap">
               <div className="relative">
-
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search employees..."
@@ -374,6 +365,15 @@ const EmployeeManagement = () => {
                 <option value="all">All Departments</option>
                 {departments.map(d => (
                   <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+              <select
+                value={statusSort}
+                onChange={e => setStatusSort(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {statusSortOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
               <button
@@ -400,89 +400,76 @@ const EmployeeManagement = () => {
                     <th className="px-6 py-4 text-left">Email</th>
                     <th className="px-6 py-4 text-left">Department</th>
                     <th className="px-6 py-4 text-left">Position</th>
-                    <th className="px-6 py-4 text-left">Salary</th>
                     <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {filtered.map(emp => (
-                    <tr key={emp._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <LiveStatusIcon isActive={emp.isOnline} />
-                          <span className={emp.isOnline ? "text-green-600 font-medium" : "text-red-600"}>
-                            {emp.isOnline ? "Online" : "Offline"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 font-medium">{emp.name}</td>
-                      <td className="px-6 py-4">{emp.email}</td>
-                      <td className="px-6 py-4">
-                        {departments.find(d => d.id === emp.department)?.name || "—"}
-                      </td>
-                      <td className="px-6 py-4">{emp.position}</td>
-                      <td className="px-6 py-4">₹{emp.salary?.toLocaleString()}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-center gap-2">
-                          <button
-                            onClick={() => { setSelectedEmployee(emp); setIsViewModalOpen(true); }}
-                            className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
-                            title="View Details"
-                          >
-                            <EyeIcon />
-                          </button>
-                          <button
-                            onClick={() => { setSelectedEmployee(emp); setIsEditModalOpen(true); }}
-                            className="text-yellow-600 hover:bg-yellow-50 p-2 rounded transition-colors"
-                            title="Edit"
-                          >
-                            <EditIcon />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setResetPasswordData({
-                                employeeId: emp._id,
-                                employeeName: emp.name,
-                                newPassword: "",
-                                confirmPassword: ""
-                              });
-                              setIsResetPasswordModalOpen(true);
-                            }}
-                            className="text-green-600 hover:bg-green-50 p-2 rounded transition-colors"
-                            title="Reset Password"
-                          >
-                            Reset
-                          </button>
-                          {emp.pendingSalary > 0 && (
+                  {filtered.length > 0 ? (
+                    filtered.map(emp => (
+                      <tr key={emp._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <LiveStatusIcon isActive={emp.isOnline} />
+                            <span className={emp.isOnline ? "text-green-600 font-medium" : "text-red-600"}>
+                              {emp.isOnline ? "Online" : "Offline"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{emp.name}</td>
+                        <td className="px-6 py-4">{emp.email}</td>
+                        <td className="px-6 py-4">
+                          {departments.find(d => d.id === emp.department)?.name || "—"}
+                        </td>
+                        <td className="px-6 py-4">{emp.position}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => { setSelectedEmployee(emp); setIsViewModalOpen(true); }}
+                              className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
+                              title="View Details"
+                            >
+                              <EyeIcon />
+                            </button>
+                            <button
+                              onClick={() => { setSelectedEmployee(emp); setIsEditModalOpen(true); }}
+                              className="text-yellow-600 hover:bg-yellow-50 p-2 rounded transition-colors"
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </button>
                             <button
                               onClick={() => {
-                                setPaySalaryData({
+                                setResetPasswordData({
                                   employeeId: emp._id,
                                   employeeName: emp.name,
-                                  amount: emp.pendingSalary,
-                                  month: new Date().getMonth() + 1,
-                                  year: new Date().getFullYear(),
-                                  notes: ""
+                                  newPassword: "",
+                                  confirmPassword: ""
                                 });
-                                setIsPaySalaryModalOpen(true);
+                                setIsResetPasswordModalOpen(true);
                               }}
-                              className="text-green-700 hover:bg-green-50 p-2 rounded transition-colors"
-                              title="Pay Salary"
+                              className="text-green-600 hover:bg-green-50 p-2 rounded transition-colors"
+                              title="Reset Password"
                             >
-                              <CheckCircleIcon />
+                              Reset
                             </button>
-                          )}
-                          <button
-                            onClick={() => handleDelete(emp._id)}
-                            className="text-red-600 hover:bg-red-50 p-2 rounded transition-colors"
-                            title="Delete"
-                          >
-                            <DeleteIcon />
-                          </button>
-                        </div>
+                            <button
+                              onClick={() => handleDelete(emp._id)}
+                              className="text-red-600 hover:bg-red-50 p-2 rounded transition-colors"
+                              title="Delete"
+                            >
+                              <DeleteIcon />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                        No employees found matching your filters.
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -558,17 +545,6 @@ const EmployeeManagement = () => {
                       placeholder="Enter position"
                       value={newEmployee.position}
                       onChange={e => setNewEmployee({ ...newEmployee, position: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Salary (₹) *</label>
-                    <input
-                      type="number"
-                      required
-                      placeholder="Enter salary"
-                      value={newEmployee.salary}
-                      onChange={e => setNewEmployee({ ...newEmployee, salary: e.target.value })}
                       className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -659,14 +635,18 @@ const EmployeeManagement = () => {
                     <p>{selectedEmployee.position}</p>
                   </div>
                   <div>
-                    <span className="font-medium">Salary:</span>
-                    <p>₹{selectedEmployee.salary?.toLocaleString()}</p>
+                    <span className="font-medium">Phone:</span>
+                    <p>{selectedEmployee.phone || "—"}</p>
                   </div>
                   <div>
                     <span className="font-medium">Status:</span>
                     <p className={selectedEmployee.isOnline ? "text-green-600" : "text-red-600"}>
                       {selectedEmployee.isOnline ? "Online" : "Offline"}
                     </p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Joining Date:</span>
+                    <p>{selectedEmployee.joiningDate || "—"}</p>
                   </div>
                 </div>
               </div>
@@ -749,12 +729,11 @@ const EmployeeManagement = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Salary (₹)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Joining Date</label>
                     <input
-                      type="number"
-                      required
-                      value={selectedEmployee.salary}
-                      onChange={e => setSelectedEmployee({ ...selectedEmployee, salary: e.target.value })}
+                      type="date"
+                      value={selectedEmployee.joiningDate}
+                      onChange={e => setSelectedEmployee({ ...selectedEmployee, joiningDate: e.target.value })}
                       className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -833,90 +812,6 @@ const EmployeeManagement = () => {
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Reset Password
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* PAY SALARY MODAL */}
-        {isPaySalaryModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-2xl font-bold">Pay Salary</h3>
-                <button
-                  onClick={() => setIsPaySalaryModalOpen(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <CloseIcon />
-                </button>
-              </div>
-              <form onSubmit={handlePaySalary} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Employee</label>
-                  <p className="font-medium">{paySalaryData.employeeName}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="Enter amount"
-                    value={paySalaryData.amount}
-                    onChange={e => setPaySalaryData({ ...paySalaryData, amount: e.target.value })}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
-                    <select
-                      value={paySalaryData.month}
-                      onChange={e => setPaySalaryData({ ...paySalaryData, month: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {new Date(2000, i).toLocaleString('default', { month: 'long' })}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
-                    <input
-                      type="number"
-                      value={paySalaryData.year}
-                      onChange={e => setPaySalaryData({ ...paySalaryData, year: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Additional notes"
-                    value={paySalaryData.notes}
-                    onChange={e => setPaySalaryData({ ...paySalaryData, notes: e.target.value })}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="flex justify-end gap-4 pt-6 border-t">
-                  <button
-                    type="button"
-                    onClick={() => setIsPaySalaryModalOpen(false)}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Pay Salary
                   </button>
                 </div>
               </form>
