@@ -414,7 +414,7 @@ const EmployeeManagement = () => {
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Employees</p>
+                <p className="text-sm text-gray-500">Total Intern</p>
                 <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
               </div>
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -549,7 +549,7 @@ const EmployeeManagement = () => {
             <LoadingSpinner />
           ) : processedEmployees.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">No employees found</div>
+              <div className="text-gray-400 mb-4">No Intern found</div>
               <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -656,7 +656,7 @@ const EmployeeManagement = () => {
 
         {/* Pagination/Info */}
         <div className="mt-4 text-sm text-gray-500">
-          Showing {processedEmployees.length} of {employees.length} employees
+          Showing {processedEmployees.length} of {employees.length} Intern
         </div>
 
         {/* Add Employee Modal */}

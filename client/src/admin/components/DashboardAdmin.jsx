@@ -104,18 +104,18 @@ const DashboardAdmin = () => {
     },
     {
       path: "employees",
-      label: "Employees",
+      label: "Interns",
       icon: FaUsers,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10"
     },
-    {
-      path: "student-management",
-      label: "Students",
-      icon: GiGraduateCap,
-      color: "text-green-500",
-      bgColor: "bg-green-500/10"
-    },
+    // {
+    //   path: "student-management",
+    //   label: "Students",
+    //   icon: GiGraduateCap,
+    //   color: "text-green-500",
+    //   bgColor: "bg-green-500/10"
+    // },
     {
       path: "monitoring-task",
       label: "Tasks",
