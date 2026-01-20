@@ -76,7 +76,102 @@ const TaskAdmin = () => {
 
     const [showAddTask, setShowAddTask] = useState(false);
 
-    // Fixed fetch with correct API endpoints
+    // Fetch employees
+    const fetchEmployees = async () => {
+        try {
+            const employeesRes = await fetch(`${API_URL}/employee/get/employee`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            let employeesData = [];
+            if (employeesRes.ok) {
+                const data = await employeesRes.json();
+                employeesData = data.employees || data || [];
+                console.log("Employees loaded:", employeesData.length);
+                setEmployees(employeesData);
+                return employeesData;
+            } else {
+                const altRes = await fetch(`${API_URL}/employee`);
+                if (altRes.ok) {
+                    const altData = await altRes.json();
+                    employeesData = altData.employees || altData || [];
+                    console.log("Employees from alternative endpoint:", employeesData.length);
+                    setEmployees(employeesData);
+                    return employeesData;
+                } else {
+                    throw new Error(`Failed to fetch employees: ${employeesRes.status}`);
+                }
+            }
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+            toast.error("Failed to load employees");
+            return [];
+        }
+    };
+
+    // Fetch tasks for a specific employee
+    const fetchEmployeeTasks = async (employeeId) => {
+        try {
+            const res = await fetch(`${API_URL}/employee/${employeeId}/tasks`);
+            if (!res.ok) throw new Error(`Failed to fetch tasks for employee ${employeeId}`);
+            
+            const data = await res.json();
+            if (data.success && data.employee && data.employee.tasks) {
+                return data.employee.tasks;
+            }
+            return [];
+        } catch (err) {
+            console.warn(`Error fetching tasks for employee ${employeeId}:`, err);
+            return [];
+        }
+    };
+
+    // Fetch all tasks using the new endpoint structure
+    const fetchAllTasks = async (employeesData) => {
+        let allTasks = [];
+        
+        // Fetch tasks for each employee
+        for (const employee of employeesData) {
+            try {
+                const employeeTasks = await fetchEmployeeTasks(employee._id);
+                
+                // Enrich tasks with employee information
+                const enrichedTasks = employeeTasks.map(task => {
+                    // Handle different field names for dates
+                    const lastUpdated = task.lastUpdated || task.updatedAt || task.updatedDate;
+                    const dueDate = task.dueDate || task.due;
+                    const completedAt = task.completedAt || task.completedDate;
+                    const createdAt = task.createdAt || task.createdDate;
+                    
+                    return {
+                        ...task,
+                        employeeId: {
+                            _id: employee._id,
+                            name: employee.name,
+                            email: employee.email,
+                            position: employee.position,
+                            department: employee.department
+                        },
+                        lastUpdated,
+                        dueDate,
+                        completedAt,
+                        createdAt
+                    };
+                });
+                
+                allTasks = [...allTasks, ...enrichedTasks];
+            } catch (err) {
+                console.warn(`Skipping employee ${employee._id}:`, err);
+            }
+        }
+        
+        return allTasks;
+    };
+
+    // Fetch all data - UPDATED TO USE NEW ENDPOINT
     const fetchAllData = async () => {
         setLoading(true);
         setError(null);
@@ -84,56 +179,78 @@ const TaskAdmin = () => {
         try {
             console.log("Starting data fetch...");
 
-            // Fetch employees - CORRECTED ENDPOINT
-            const employeesEndpoint = `${API_URL}/employee/get/employee`;
-            console.log("Fetching employees from:", employeesEndpoint);
-
-            const employeesRes = await fetch(employeesEndpoint, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            console.log("Employees response status:", employeesRes.status);
-            console.log("Employees response ok:", employeesRes.ok);
-
-            if (employeesRes.ok) {
-                const employeesData = await employeesRes.json();
-                console.log("Employees data received:", employeesData);
-                setEmployees(employeesData.employees || employeesData || []);
-            } else {
-                // Try alternative endpoint
-                console.warn("Primary employees endpoint failed, trying alternative...");
-                const altRes = await fetch(`${API_URL}/employee`);
-                if (altRes.ok) {
-                    const altData = await altRes.json();
-                    console.log("Alternative endpoint worked:", altData);
-                    setEmployees(altData.employees || altData || []);
-                } else {
-                    throw new Error(`Failed to fetch employees: ${employeesRes.status}`);
-                }
+            // Fetch employees first
+            const employeesData = await fetchEmployees();
+            if (employeesData.length === 0) {
+                throw new Error("No employees found");
             }
 
-            // Fetch all tasks - CORRECTED ENDPOINT
-            const tasksEndpoint = `${API_URL}/employee/task`;
-            console.log("Fetching tasks from:", tasksEndpoint);
+            // Fetch all tasks using the new endpoint structure
+            const allTasks = await fetchAllTasks(employeesData);
 
-            const tasksRes = await fetch(tasksEndpoint);
-            console.log("Tasks response status:", tasksRes.status);
-
-            if (tasksRes.ok) {
-                const tasksData = await tasksRes.json();
-                console.log("Tasks data received:", tasksData);
-                setTasks(tasksData.tasks || tasksData || []);
-            } else {
-                throw new Error(`Failed to fetch tasks: ${tasksRes.status}`);
+            console.log("Total tasks loaded:", allTasks.length);
+            if (allTasks.length > 0) {
+                console.log("Sample task:", allTasks[0]);
             }
+            
+            setTasks(allTasks);
 
         } catch (err) {
-            console.error("Fetch error details:", err);
+            console.error("Fetch error:", err);
             setError(err.message);
             toast.error(`Failed to load data: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fetch tasks for a specific employee when filter changes
+    const fetchTasksByEmployee = async (employeeId) => {
+        if (!employeeId) {
+            // If no employee selected, fetch all tasks
+            fetchAllData();
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const employee = employees.find(emp => emp._id === employeeId);
+            if (!employee) {
+                toast.error("Employee not found");
+                return;
+            }
+
+            const employeeTasks = await fetchEmployeeTasks(employeeId);
+            
+            // Enrich tasks with employee information
+            const enrichedTasks = employeeTasks.map(task => {
+                const lastUpdated = task.lastUpdated || task.updatedAt || task.updatedDate;
+                const dueDate = task.dueDate || task.due;
+                const completedAt = task.completedAt || task.completedDate;
+                const createdAt = task.createdAt || task.createdDate;
+                
+                return {
+                    ...task,
+                    employeeId: {
+                        _id: employee._id,
+                        name: employee.name,
+                        email: employee.email,
+                        position: employee.position,
+                        department: employee.department
+                    },
+                    lastUpdated,
+                    dueDate,
+                    completedAt,
+                    createdAt
+                };
+            });
+
+            setTasks(enrichedTasks);
+            toast.success(`Showing tasks for ${employee.name}`);
+        } catch (err) {
+            console.error("Error fetching employee tasks:", err);
+            toast.error("Failed to load employee tasks");
+            fetchAllData(); // Fall back to all tasks
         } finally {
             setLoading(false);
         }
@@ -143,23 +260,73 @@ const TaskAdmin = () => {
         fetchAllData();
     }, []);
 
+    // Handle employee filter change
+    const handleEmployeeFilterChange = (employeeId) => {
+        setFilters({ ...filters, employee: employeeId });
+        
+        if (employeeId) {
+            fetchTasksByEmployee(employeeId);
+        } else {
+            fetchAllData();
+        }
+    };
 
-
-    // Filter tasks
+    // Filter tasks - SIMPLIFIED FOR EMPLOYEE FILTER
     const filteredTasks = tasks.filter(task => {
         const matchesSearch = !filters.search ||
             task.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
             task.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
-            task.employeeId?.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+            (task.employeeId && typeof task.employeeId === 'object' && 
+             task.employeeId.name?.toLowerCase().includes(filters.search.toLowerCase())) ||
             task.notes?.toLowerCase().includes(filters.search.toLowerCase());
 
-        const matchesEmployee = !filters.employee || task.employeeId?._id === filters.employee;
-        const matchesStatus = !filters.status || task.status?.toLowerCase() === filters.status.toLowerCase();
-        const matchesPriority = !filters.priority || task.priority === filters.priority;
-        const matchesType = !filters.type || task.type === filters.type;
+        // Employee filter is already handled by fetchTasksByEmployee
+        // but we still check here for consistency
+        const matchesEmployee = !filters.employee || 
+            (task.employeeId && task.employeeId._id === filters.employee);
+
+        const matchesStatus = !filters.status || 
+            (task.status?.toLowerCase() === filters.status.toLowerCase());
+        
+        const matchesPriority = !filters.priority || 
+            task.priority === filters.priority;
+        
+        const matchesType = !filters.type || 
+            task.type === filters.type;
 
         return matchesSearch && matchesEmployee && matchesStatus && matchesPriority && matchesType;
     });
+
+    // Get employee name for display
+    const getEmployeeName = (employeeId) => {
+        if (!employeeId) return "Unassigned";
+        
+        if (typeof employeeId === 'object' && employeeId.name) {
+            return employeeId.name;
+        }
+        
+        if (typeof employeeId === 'string') {
+            const employee = employees.find(emp => emp._id === employeeId);
+            return employee ? employee.name : "Unknown";
+        }
+        
+        return "Unassigned";
+    };
+
+    // Get employee object for display
+    const getEmployeeObject = (employeeId) => {
+        if (!employeeId) return null;
+        
+        if (typeof employeeId === 'object' && employeeId._id) {
+            return employeeId;
+        }
+        
+        if (typeof employeeId === 'string') {
+            return employees.find(emp => emp._id === employeeId);
+        }
+        
+        return null;
+    };
 
     // Clear filters
     const clearFilters = () => {
@@ -170,9 +337,11 @@ const TaskAdmin = () => {
             priority: "",
             type: ""
         });
+        fetchAllData(); // Reset to show all tasks
+        toast.success("Filters cleared");
     };
 
-    // Add new task - CORRECTED ENDPOINT
+    // Add new task
     const handleAddTask = async () => {
         if (!newTask.title.trim()) {
             toast.error("Title is required");
@@ -195,7 +364,18 @@ const TaskAdmin = () => {
 
             if (!res.ok) throw new Error(data.message || "Failed to add task");
 
-            setTasks(prev => [data.task, ...prev]);
+            // Find the employee data to enrich the new task
+            const employee = employees.find(emp => emp._id === newTask.employeeId);
+            const enrichedTask = {
+                ...data.task,
+                employeeId: employee || newTask.employeeId,
+                lastUpdated: data.task.lastUpdated || data.task.updatedAt || new Date().toISOString(),
+                dueDate: data.task.dueDate || data.task.due,
+                createdAt: data.task.createdAt || data.task.createdDate || new Date().toISOString(),
+                completedAt: data.task.completedAt || data.task.completedDate
+            };
+
+            setTasks(prev => [enrichedTask, ...prev]);
             setNewTask({
                 title: "",
                 description: "",
@@ -213,7 +393,7 @@ const TaskAdmin = () => {
         }
     };
 
-    // Update task - CORRECTED ENDPOINT
+    // Update task
     const handleUpdateTask = async (taskId, updates) => {
         try {
             const res = await fetch(`${API_URL}/employee/task/${taskId}`, {
@@ -226,9 +406,22 @@ const TaskAdmin = () => {
 
             if (!res.ok) throw new Error(data.message || "Failed to update task");
 
-            setTasks(prev => prev.map(task =>
-                task._id === taskId ? { ...task, ...updates } : task
-            ));
+            // Get current date for lastUpdated
+            const currentDate = new Date().toISOString();
+            
+            setTasks(prev => prev.map(task => {
+                if (task._id === taskId) {
+                    const employeeData = task.employeeId;
+                    return { 
+                        ...task, 
+                        ...updates,
+                        employeeId: employeeData,
+                        lastUpdated: currentDate
+                    };
+                }
+                return task;
+            }));
+            
             setActiveDropdown(null);
             toast.success("Task updated successfully!");
         } catch (err) {
@@ -236,7 +429,7 @@ const TaskAdmin = () => {
         }
     };
 
-    // Delete task - CORRECTED ENDPOINT
+    // Delete task
     const handleDeleteTask = async (taskId) => {
         if (!window.confirm("Are you sure you want to delete this task?")) return;
 
@@ -269,24 +462,27 @@ const TaskAdmin = () => {
             return;
         }
 
-        const exportData = filteredTasks.map(task => ({
-            "Task ID": task._id,
-            "Title": task.title,
-            "Description": task.description,
-            "Employee": task.employeeId?.name || "Unassigned",
-            "Email": task.employeeId?.email || "N/A",
-            "Department": task.employeeId?.department || "N/A",
-            "Position": task.employeeId?.position || "N/A",
-            "Status": task.status,
-            "Priority": task.priority,
-            "Type": task.type,
-            "Progress": `${task.progress}%`,
-            "Due Date": task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A",
-            "Created": task.createdAt ? new Date(task.createdAt).toLocaleDateString() : "N/A",
-            "Last Updated": task.lastUpdated ? new Date(task.lastUpdated).toLocaleDateString() : "N/A",
-            "Completed At": task.completedAt ? new Date(task.completedAt).toLocaleDateString() : "N/A",
-            "Notes": task.notes || "N/A"
-        }));
+        const exportData = filteredTasks.map(task => {
+            const employee = getEmployeeObject(task.employeeId);
+            return {
+                "Task ID": task._id,
+                "Title": task.title,
+                "Description": task.description,
+                "Employee": employee ? employee.name : "Unassigned",
+                "Email": employee ? employee.email : "N/A",
+                "Department": employee ? employee.department : "N/A",
+                "Position": employee ? employee.position : "N/A",
+                "Status": task.status,
+                "Priority": task.priority,
+                "Type": task.type,
+                "Progress": `${task.progress}%`,
+                "Due Date": task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A",
+                "Created": task.createdAt ? new Date(task.createdAt).toLocaleDateString() : "N/A",
+                "Last Updated": task.lastUpdated ? new Date(task.lastUpdated).toLocaleDateString() : "N/A",
+                "Completed At": task.completedAt ? new Date(task.completedAt).toLocaleDateString() : "N/A",
+                "Notes": task.notes || "N/A"
+            };
+        });
 
         const csvHeaders = Object.keys(exportData[0]).join(",");
         const csvRows = exportData.map(row =>
@@ -308,23 +504,41 @@ const TaskAdmin = () => {
     // Format date
     const formatDate = (dateString) => {
         if (!dateString) return "N/A";
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "N/A";
+            
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (err) {
+            console.warn("Error formatting date:", dateString, err);
+            return "N/A";
+        }
     };
 
     // Format datetime
     const formatDateTime = (dateString) => {
         if (!dateString) return "N/A";
-        return new Date(dateString).toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "N/A";
+            
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (err) {
+            console.warn("Error formatting datetime:", dateString, err);
+            return "N/A";
+        }
     };
 
     // Calculate task statistics
@@ -389,11 +603,19 @@ const TaskAdmin = () => {
                                     <div className="mt-1 flex items-center space-x-3">
                                         <Users className="w-5 h-5 text-gray-400" />
                                         <div>
-                                            <p className="text-sm font-medium text-gray-900">{selectedTask.employeeId.name}</p>
-                                            <p className="text-sm text-gray-500">{selectedTask.employeeId.email}</p>
-                                            <p className="text-xs text-gray-400">
-                                                {selectedTask.employeeId.position} • {selectedTask.employeeId.department}
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {getEmployeeName(selectedTask.employeeId)}
                                             </p>
+                                            {getEmployeeObject(selectedTask.employeeId) && (
+                                                <>
+                                                    <p className="text-sm text-gray-500">
+                                                        {getEmployeeObject(selectedTask.employeeId).email}
+                                                    </p>
+                                                    <p className="text-xs text-gray-400">
+                                                        {getEmployeeObject(selectedTask.employeeId).position} • {getEmployeeObject(selectedTask.employeeId).department}
+                                                    </p>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
@@ -463,7 +685,7 @@ const TaskAdmin = () => {
                             {/* Notes */}
                             {selectedTask.notes && (
                                 <div>
-                                    <label className=" text-sm font-medium text-gray-700 flex items-center">
+                                    <label className="text-sm font-medium text-gray-700 flex items-center">
                                         <MessageSquare className="w-4 h-4 mr-1" />
                                         Notes
                                     </label>
@@ -528,8 +750,6 @@ const TaskAdmin = () => {
                             <Download className="w-4 h-4" />
                             Export CSV
                         </button>
-                        {/* Debug button */}
-
                     </div>
                 </div>
 
@@ -610,7 +830,9 @@ const TaskAdmin = () => {
                                 >
                                     <option value="">Select Employee *</option>
                                     {employees.map(emp => (
-                                        <option key={emp._id} value={emp._id}>{emp.name}</option>
+                                        <option key={emp._id} value={emp._id}>
+                                            {emp.name} ({emp.department})
+                                        </option>
                                     ))}
                                 </select>
                                 <select
@@ -706,16 +928,16 @@ const TaskAdmin = () => {
                             />
                         </div>
 
-                        {/* Employee Filter */}
+                        {/* Employee Filter - UPDATED */}
                         <select
                             value={filters.employee}
-                            onChange={(e) => setFilters({ ...filters, employee: e.target.value })}
+                            onChange={(e) => handleEmployeeFilterChange(e.target.value)}
                             className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                         >
                             <option value="">All Employees</option>
                             {employees.map(emp => (
                                 <option key={emp._id} value={emp._id}>
-                                    {emp.name}
+                                    {emp.name} - {emp.department}
                                 </option>
                             ))}
                         </select>
@@ -805,132 +1027,135 @@ const TaskAdmin = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredTasks.map((task) => (
-                                        <tr key={task._id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4">
-                                                <div>
-                                                    <div className="text-sm font-semibold text-gray-900">
-                                                        {task.title}
-                                                    </div>
-                                                    {task.description && (
-                                                        <div className="text-sm text-gray-500 mt-1 line-clamp-2">
-                                                            {task.description}
+                                    {filteredTasks.map((task) => {
+                                        const employee = getEmployeeObject(task.employeeId);
+                                        return (
+                                            <tr key={task._id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4">
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {task.title}
                                                         </div>
-                                                    )}
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${TYPE_COLORS[task.type] || "bg-gray-100 text-gray-800"}`}>
-                                                            {task.type}
-                                                        </span>
-                                                        {task.notes && (
-                                                            <MessageSquare className="w-3 h-3 text-gray-400" title="Has notes" />
+                                                        {task.description && (
+                                                            <div className="text-sm text-gray-500 mt-1 line-clamp-2">
+                                                                {task.description}
+                                                            </div>
                                                         )}
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${TYPE_COLORS[task.type] || "bg-gray-100 text-gray-800"}`}>
+                                                                {task.type}
+                                                            </span>
+                                                            {task.notes && (
+                                                                <MessageSquare className="w-3 h-3 text-gray-400" title="Has notes" />
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {task.employeeId ? (
-                                                    <div className="flex items-center space-x-3">
-                                                        <div className="flex-shrink-0">
-                                                            <Users className="w-8 h-8 text-gray-400" />
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {employee ? (
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="flex-shrink-0">
+                                                                <Users className="w-8 h-8 text-gray-400" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-sm font-medium text-gray-900">
+                                                                    {employee.name}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    {employee.email}
+                                                                </div>
+                                                                <div className="text-xs text-gray-400">
+                                                                    {employee.department} • {employee.position}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-sm text-gray-500 italic">Unassigned</div>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="space-y-2">
+                                                        <div>
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[task.status?.toLowerCase()] || "bg-gray-100 text-gray-800"}`}>
+                                                                {STATUS_ICONS[task.status?.toLowerCase()] || <Clock className="w-3 h-3 mr-1" />}
+                                                                {task.status || "Pending"}
+                                                            </span>
                                                         </div>
                                                         <div>
-                                                            <div className="text-sm font-medium text-gray-900">
-                                                                {task.employeeId.name}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500">
-                                                                {task.employeeId.email}
-                                                            </div>
-                                                            <div className="text-xs text-gray-400">
-                                                                {task.employeeId.department}
-                                                            </div>
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_COLORS[task.priority] || "bg-gray-100 text-gray-800"}`}>
+                                                                {PRIORITY_ICONS[task.priority] || <Flag className="w-3 h-3 mr-1" />}
+                                                                {task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : "Medium"}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                ) : (
-                                                    <div className="text-sm text-gray-500 italic">Unassigned</div>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="space-y-2">
-                                                    <div>
-                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[task.status?.toLowerCase()] || "bg-gray-100 text-gray-800"}`}>
-                                                            {STATUS_ICONS[task.status?.toLowerCase()] || <Clock className="w-3 h-3 mr-1" />}
-                                                            {task.status || "Pending"}
-                                                        </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                                                            <div
+                                                                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                                                                style={{ width: `${task.progress || 0}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-600">{task.progress || 0}%</span>
                                                     </div>
-                                                    <div>
-                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_COLORS[task.priority] || "bg-gray-100 text-gray-800"}`}>
-                                                            {PRIORITY_ICONS[task.priority] || <Flag className="w-3 h-3 mr-1" />}
-                                                            {task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : "Medium"}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                                                        <div
-                                                            className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                                                            style={{ width: `${task.progress || 0}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <span className="text-sm font-medium text-gray-600">{task.progress || 0}%</span>
-                                                </div>
-                                                {task.completedAt && (
-                                                    <div className="text-xs text-gray-500 mt-1">
-                                                        Completed: {formatDate(task.completedAt)}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center">
-                                                        <Calendar className="w-3 h-3 mr-1" />
-                                                        Due: {formatDate(task.dueDate) || "No due date"}
-                                                    </div>
-                                                    <div>Created: {formatDate(task.createdAt)}</div>
-                                                    <div>Updated: {formatDate(task.lastUpdated)}</div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-medium">
-                                                <div className="relative">
-                                                    <button
-                                                        onClick={() => setActiveDropdown(activeDropdown === task._id ? null : task._id)}
-                                                        className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
-                                                    >
-                                                        <MoreVertical className="w-4 h-4" />
-                                                    </button>
-
-                                                    {activeDropdown === task._id && (
-                                                        <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                                                            <div className="py-1">
-                                                                <button
-                                                                    onClick={() => handleViewDetails(task)}
-                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                                                                >
-                                                                    <Eye className="w-4 h-4 mr-2" />
-                                                                    View Details
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleUpdateTask(task._id, { status: "completed", progress: 100 })}
-                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                                                                >
-                                                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                                                    Mark Complete
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDeleteTask(task._id)}
-                                                                    className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                                    Delete Task
-                                                                </button>
-                                                            </div>
+                                                    {task.completedAt && (
+                                                        <div className="text-xs text-gray-500 mt-1">
+                                                            Completed: {formatDate(task.completedAt)}
                                                         </div>
                                                     )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center">
+                                                            <Calendar className="w-3 h-3 mr-1" />
+                                                            Due: {formatDate(task.dueDate) || "No due date"}
+                                                        </div>
+                                                        <div>Created: {formatDate(task.createdAt)}</div>
+                                                        <div>Updated: {formatDate(task.lastUpdated) || formatDate(task.updatedAt) || "N/A"}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-medium">
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={() => setActiveDropdown(activeDropdown === task._id ? null : task._id)}
+                                                            className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
+                                                        >
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </button>
+
+                                                        {activeDropdown === task._id && (
+                                                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                                                                <div className="py-1">
+                                                                    <button
+                                                                        onClick={() => handleViewDetails(task)}
+                                                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                                                    >
+                                                                        <Eye className="w-4 h-4 mr-2" />
+                                                                        View Details
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleUpdateTask(task._id, { status: "completed", progress: 100 })}
+                                                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                                                    >
+                                                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                                                        Mark Complete
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteTask(task._id)}
+                                                                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                                        Delete Task
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -939,7 +1164,9 @@ const TaskAdmin = () => {
                             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                             <h3 className="text-lg font-semibold text-gray-600 mb-2">No tasks found</h3>
                             <p className="text-gray-500">
-                                {filters.search || filters.employee || filters.status || filters.priority || filters.type
+                                {filters.employee 
+                                    ? `No tasks found for selected employee.`
+                                    : filters.search || filters.status || filters.priority || filters.type
                                     ? "No tasks match your filters. Try changing your filter criteria."
                                     : "No tasks have been created yet."}
                             </p>
@@ -957,9 +1184,9 @@ const TaskAdmin = () => {
                 {filteredTasks.length > 0 && (
                     <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
                         <div className="text-sm text-gray-600">
-                            Showing {filteredTasks.length} of {tasks.length} tasks
+                            Showing {filteredTasks.length} {filters.employee ? "employee" : ""} task{filteredTasks.length !== 1 ? 's' : ''}
                             {filters.search && ` matching "${filters.search}"`}
-                            {filters.employee && ` for selected employee`}
+                            {filters.employee && ` for ${employees.find(e => e._id === filters.employee)?.name || "selected employee"}`}
                             {filters.status && ` with status "${filters.status}"`}
                             {filters.priority && ` with priority "${filters.priority}"`}
                             {filters.type && ` of type "${filters.type}"`}

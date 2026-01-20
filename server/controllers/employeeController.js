@@ -776,27 +776,35 @@ export const getEmployeePassword = async (req, res) => {
 // ---------------------------------------------------------------------
 export const addTask = async (req, res) => {
   try {
-    const { title, description, type, priority, progress, notes, employeeId } = req.body;
+    // Assuming your protectEmployee middleware sets req.employee
+    const employeeId = req.employee?._id;   // or req.user._id — check your middleware!
 
-    // If employeeId is "public-user", create task without employee reference
-    const taskData = {
+    if (!employeeId) {
+      return res.status(401).json({ success: false, message: "Not authorized" });
+    }
+
+    const { title, description, type, priority, dueDate, progress, status, notes } = req.body;
+
+    if (!title?.trim()) {
+      return res.status(400).json({ success: false, message: "Title is required" });
+    }
+
+    const task = await Task.create({
+      employeeId,           // from token, not body
       title,
-      description,
-      type,
-      priority,
-      progress,
-      notes,
-      ...(employeeId && employeeId !== "public-user" && { employeeId }) // Only add if valid
-    };
+      description: description || "",
+      type: type || "Daily",
+      priority: priority || "medium",
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      progress: Number(progress) || 0,
+      status: status || "Pending",
+      notes: notes || "",
+    });
 
-    const task = await Task.create(taskData);
     res.status(201).json({ success: true, task });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: [error.message]
-    });
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -1402,3 +1410,151 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+export const updateTaskByEmployee = async (req, res) => {
+  const { employeeId, taskId } = req.params;
+  const updates = req.body;
+
+  try {
+    if (!employeeId || !taskId) {
+      return res.status(400).json({
+        success: false,
+        message: "Employee ID and Task ID are required"
+      });
+    }
+
+    const updateData = {
+      ...updates,
+      updatedAt: new Date()
+    };
+
+    // Auto-update status based on progress
+    if (updates.progress !== undefined) {
+      if (updates.progress === 100) {
+        updateData.status = "Completed";
+        updateData.completedAt = new Date();
+      } else if (updates.progress > 0) {
+        updateData.status = "In Progress";
+      } else {
+        updateData.status = "Pending";
+      }
+    }
+
+    // Find task by employeeId + taskId
+    const task = await Task.findOneAndUpdate(
+      { _id: taskId, employeeId },
+      updateData,
+      { new: true, runValidators: true }
+    ).populate("employeeId", "name email");
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found for this employee"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Task updated successfully",
+      task: {
+        _id: task._id,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        progress: task.progress,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        employee: {
+          _id: task.employeeId._id,
+          name: task.employeeId.name,
+          email: task.employeeId.email
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error("Update Task Error:", err);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format"
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+};
+export const getEmployeeWithTasks = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const employee = await Employee.findById(id)
+      .select("name email") // ✅ only name & email
+      .populate({
+        path: "tasks",
+        select: "title description status priority progress createdAt updatedAt",
+        options: { sort: { createdAt: -1 } }
+      });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      employee: {
+        _id: employee._id,
+        name: employee.name,
+        email: employee.email,
+        tasks: employee.tasks
+      }
+    });
+  } catch (error) {
+    console.error("Get Employee With Tasks Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+export const getMyTasks = async (req, res) => {
+  try {
+    // req.employee comes from protectEmployee middleware
+    const employeeId = req.employee._id;
+
+    if (!employeeId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication failed - employee ID not found',
+      });
+    }
+
+    const tasks = await Task.find({ employeeId })
+      .sort({ createdAt: -1 })          // newest tasks first
+      .select('-__v')                   // remove mongoose version key
+      .lean();                          // faster plain JS objects
+
+    res.status(200).json({
+      success: true,
+      count: tasks.length,
+      data: tasks,
+    });
+  } catch (error) {
+    console.error('Error fetching employee tasks:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching tasks',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};

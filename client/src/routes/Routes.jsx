@@ -38,6 +38,7 @@ import EmployeeLogin from "../pages/EmployeeLogin";
 import StudentForm from "../pages/StudentForm";
 import DashboardAdmin from "../admin/components/DashboardAdmin";
 import DashboardEmployee from "../employee/components/DashboardEmployee";
+import EmployeeTasks from "../employee/pages/EmployeeTasks";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -143,7 +144,14 @@ const AppRoutes = () => (
         </ProtectedRoute>
       } 
     />
-    
+    <Route 
+      path="/my/tasks" 
+      element={
+        <ProtectedRoute requiredRole="employee">
+          <EmployeeTasks />
+        </ProtectedRoute>
+      } 
+    />
     {/* Catch all route */}
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
