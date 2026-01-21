@@ -1,5 +1,5 @@
 // src/pages/admin/TaskAdmin.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
     FileText, Search, Filter, Download, Eye, Edit, Trash2, Users,
     Calendar, Flag, Loader, RefreshCw, Plus, Clock, MessageSquare,
@@ -21,8 +21,7 @@ const PRIORITY_ICONS = {
     medium: <Flag className="w-3 h-3 text-yellow-600" />,
     high: <Flag className="w-3 h-3 text-orange-600" />,
     urgent: <AlertCircle className="w-3 h-3 text-red-600" />
-};  
-
+};
 
 const STATUS_COLORS = {
     pending: "bg-gray-100 text-gray-800 border border-gray-200",
@@ -53,6 +52,7 @@ const TaskAdmin = () => {
     const [selectedTask, setSelectedTask] = useState(null);
     const [showTaskDetails, setShowTaskDetails] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
 
     // Filters
     const [filters, setFilters] = useState({
@@ -77,8 +77,11 @@ const TaskAdmin = () => {
 
     const [showAddTask, setShowAddTask] = useState(false);
 
+    // Cache for employee tasks
+    const [employeeTasksCache, setEmployeeTasksCache] = useState({});
+
     // Fetch employees
-    const fetchEmployees = async () => {
+    const fetchEmployees = useCallback(async () => {
         try {
             const employeesRes = await fetch(`${API_URL}/employee/get/employee`, {
                 method: 'GET',
@@ -91,7 +94,6 @@ const TaskAdmin = () => {
             if (employeesRes.ok) {
                 const data = await employeesRes.json();
                 employeesData = data.employees || data || [];
-                console.log("Employees loaded:", employeesData.length);
                 setEmployees(employeesData);
                 return employeesData;
             } else {
@@ -99,7 +101,6 @@ const TaskAdmin = () => {
                 if (altRes.ok) {
                     const altData = await altRes.json();
                     employeesData = altData.employees || altData || [];
-                    console.log("Employees from alternative endpoint:", employeesData.length);
                     setEmployees(employeesData);
                     return employeesData;
                 } else {
@@ -111,10 +112,10 @@ const TaskAdmin = () => {
             toast.error("Failed to load employees");
             return [];
         }
-    };
+    }, []);
 
     // Fetch tasks for a specific employee
-    const fetchEmployeeTasks = async (employeeId) => {
+    const fetchEmployeeTasks = useCallback(async (employeeId) => {
         try {
             const res = await fetch(`${API_URL}/employee/${employeeId}/tasks`);
             if (!res.ok) throw new Error(`Failed to fetch tasks for employee ${employeeId}`);
@@ -128,53 +129,96 @@ const TaskAdmin = () => {
             console.warn(`Error fetching tasks for employee ${employeeId}:`, err);
             return [];
         }
-    };
+    }, []);
 
-    // Fetch all tasks using the new endpoint structure
-    const fetchAllTasks = async (employeesData) => {
-        let allTasks = [];
+    // Fetch all tasks in parallel - OPTIMIZED VERSION
+    const fetchAllTasks = useCallback(async (employeesData) => {
+        console.log(`Fetching tasks for ${employeesData.length} employees in parallel...`);
         
-        // Fetch tasks for each employee
-        for (const employee of employeesData) {
-            try {
-                const employeeTasks = await fetchEmployeeTasks(employee._id);
-                
-                // Enrich tasks with employee information
-                const enrichedTasks = employeeTasks.map(task => {
-                    // Handle different field names for dates
-                    const lastUpdated = task.lastUpdated || task.updatedAt || task.updatedDate;
-                    const dueDate = task.dueDate || task.due;
-                    const completedAt = task.completedAt || task.completedDate;
-                    const createdAt = task.createdAt || task.createdDate;
-                    
-                    return {
+        // Create an array of promises for each employee's tasks
+        const taskPromises = employeesData.map(emp =>
+            fetchEmployeeTasks(emp._id)
+                .then(tasks => {
+                    console.log(`Fetched ${tasks.length} tasks for employee ${emp.name}`);
+                    return tasks.map(task => ({
                         ...task,
                         employeeId: {
-                            _id: employee._id,
-                            name: employee.name,
-                            email: employee.email,
-                            position: employee.position,
-                            department: employee.department
+                            _id: emp._id,
+                            name: emp.name,
+                            email: emp.email,
+                            position: emp.position,
+                            department: emp.department
                         },
-                        lastUpdated,
-                        dueDate,
-                        completedAt,
-                        createdAt
-                    };
-                });
-                
-                allTasks = [...allTasks, ...enrichedTasks];
-            } catch (err) {
-                console.warn(`Skipping employee ${employee._id}:`, err);
-            }
-        }
-        
-        return allTasks;
-    };
+                        lastUpdated: task.lastUpdated || task.updatedAt || task.updatedDate,
+                        dueDate: task.dueDate || task.due,
+                        completedAt: task.completedAt || task.completedDate,
+                        createdAt: task.createdAt || task.createdDate,
+                        status: task.status || 'pending',
+                        priority: task.priority || 'medium',
+                        progress: task.progress || 0,
+                        type: task.type || 'Daily'
+                    }));
+                })
+                .catch(err => {
+                    console.warn(`Failed to fetch tasks for employee ${emp.name}:`, err);
+                    return []; // Return empty array if fetch fails
+                })
+        );
 
-    // Fetch all data - UPDATED TO USE NEW ENDPOINT
-    const fetchAllData = async () => {
-        setLoading(true);
+        try {
+            // Execute all promises in parallel with Promise.allSettled
+            const results = await Promise.allSettled(taskPromises);
+            
+            // Combine all successful results
+            let allTasks = [];
+            let successCount = 0;
+            let failedCount = 0;
+            
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    allTasks = [...allTasks, ...result.value];
+                    successCount++;
+                } else {
+                    console.warn(`Failed to fetch tasks for employee ${employeesData[index]?.name}:`, result.reason);
+                    failedCount++;
+                }
+            });
+
+            console.log(`Successfully fetched tasks from ${successCount} employees, ${failedCount} failed`);
+            console.log(`Total tasks loaded: ${allTasks.length}`);
+
+            // Sort tasks by lastUpdated (newest first)
+            allTasks.sort((a, b) => {
+                const dateA = new Date(a.lastUpdated || a.createdAt || 0);
+                const dateB = new Date(b.lastUpdated || b.createdAt || 0);
+                return dateB - dateA;
+            });
+
+            // Build cache for employee tasks
+            const cache = {};
+            allTasks.forEach(task => {
+                if (task.employeeId && task.employeeId._id) {
+                    const empId = task.employeeId._id;
+                    if (!cache[empId]) {
+                        cache[empId] = [];
+                    }
+                    cache[empId].push(task);
+                }
+            });
+            
+            setEmployeeTasksCache(cache);
+            
+            return allTasks;
+        } catch (err) {
+            console.error("Error in parallel task fetching:", err);
+            throw err;
+        }
+    }, [fetchEmployeeTasks]);
+
+    // Fetch all data - OPTIMIZED
+    const fetchAllData = useCallback(async (isRefresh = false) => {
+        setLoading(!isRefresh);
+        setRefreshing(isRefresh);
         setError(null);
 
         try {
@@ -186,15 +230,16 @@ const TaskAdmin = () => {
                 throw new Error("No employees found");
             }
 
-            // Fetch all tasks using the new endpoint structure
+            // Fetch all tasks in parallel
             const allTasks = await fetchAllTasks(employeesData);
 
-            console.log("Total tasks loaded:", allTasks.length);
-            if (allTasks.length > 0) {
-                console.log("Sample task:", allTasks[0]);
-            }
-            
             setTasks(allTasks);
+
+            if (isRefresh) {
+                toast.success(`Refreshed! Loaded ${allTasks.length} tasks from ${employeesData.length} employees`);
+            } else {
+                console.log(`Successfully loaded ${allTasks.length} tasks`);
+            }
 
         } catch (err) {
             console.error("Fetch error:", err);
@@ -202,13 +247,13 @@ const TaskAdmin = () => {
             toast.error(`Failed to load data: ${err.message}`);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
-    };
+    }, [fetchEmployees, fetchAllTasks]);
 
     // Fetch tasks for a specific employee when filter changes
-    const fetchTasksByEmployee = async (employeeId) => {
+    const fetchTasksByEmployee = useCallback(async (employeeId) => {
         if (!employeeId) {
-            // If no employee selected, fetch all tasks
             fetchAllData();
             return;
         }
@@ -221,49 +266,70 @@ const TaskAdmin = () => {
                 return;
             }
 
+            // Check cache first
+            if (employeeTasksCache[employeeId]) {
+                console.log(`Using cached tasks for employee ${employee.name}`);
+                setTasks(employeeTasksCache[employeeId]);
+                toast.success(`Showing ${employeeTasksCache[employeeId].length} cached tasks for ${employee.name}`);
+                setLoading(false);
+                return;
+            }
+
+            console.log(`Fetching fresh tasks for employee ${employee.name}`);
             const employeeTasks = await fetchEmployeeTasks(employeeId);
             
             // Enrich tasks with employee information
-            const enrichedTasks = employeeTasks.map(task => {
-                const lastUpdated = task.lastUpdated || task.updatedAt || task.updatedDate;
-                const dueDate = task.dueDate || task.due;
-                const completedAt = task.completedAt || task.completedDate;
-                const createdAt = task.createdAt || task.createdDate;
-                
-                return {
-                    ...task,
-                    employeeId: {
-                        _id: employee._id,
-                        name: employee.name,
-                        email: employee.email,
-                        position: employee.position,
-                        department: employee.department
-                    },
-                    lastUpdated,
-                    dueDate,
-                    completedAt,
-                    createdAt
-                };
-            });
+            const enrichedTasks = employeeTasks.map(task => ({
+                ...task,
+                employeeId: {
+                    _id: employee._id,
+                    name: employee.name,
+                    email: employee.email,
+                    position: employee.position,
+                    department: employee.department
+                },
+                lastUpdated: task.lastUpdated || task.updatedAt || task.updatedDate,
+                dueDate: task.dueDate || task.due,
+                completedAt: task.completedAt || task.completedDate,
+                createdAt: task.createdAt || task.createdDate,
+                status: task.status || 'pending',
+                priority: task.priority || 'medium',
+                progress: task.progress || 0,
+                type: task.type || 'Daily'
+            }));
 
             setTasks(enrichedTasks);
-            toast.success(`Showing tasks for ${employee.name}`);
+            
+            // Update cache
+            setEmployeeTasksCache(prev => ({
+                ...prev,
+                [employeeId]: enrichedTasks
+            }));
+
+            toast.success(`Showing ${enrichedTasks.length} tasks for ${employee.name}`);
         } catch (err) {
             console.error("Error fetching employee tasks:", err);
             toast.error("Failed to load employee tasks");
-            fetchAllData(); // Fall back to all tasks
+            
+            // Fall back to cached data if available
+            if (employeeTasksCache[employeeId]) {
+                setTasks(employeeTasksCache[employeeId]);
+            } else {
+                fetchAllData(); // Fall back to all tasks
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }, [employees, employeeTasksCache, fetchEmployeeTasks, fetchAllData]);
 
+    // Initial fetch
     useEffect(() => {
         fetchAllData();
-    }, []);
+    }, [fetchAllData]);
 
     // Handle employee filter change
     const handleEmployeeFilterChange = (employeeId) => {
-        setFilters({ ...filters, employee: employeeId });
+        setFilters(prev => ({ ...prev, employee: employeeId }));
         
         if (employeeId) {
             fetchTasksByEmployee(employeeId);
@@ -272,17 +338,15 @@ const TaskAdmin = () => {
         }
     };
 
-    // Filter tasks - SIMPLIFIED FOR EMPLOYEE FILTER
+    // Filter tasks
     const filteredTasks = tasks.filter(task => {
+        const searchLower = filters.search.toLowerCase();
         const matchesSearch = !filters.search ||
-            task.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
-            task.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
-            (task.employeeId && typeof task.employeeId === 'object' && 
-             task.employeeId.name?.toLowerCase().includes(filters.search.toLowerCase())) ||
-            task.notes?.toLowerCase().includes(filters.search.toLowerCase());
+            task.title?.toLowerCase().includes(searchLower) ||
+            task.description?.toLowerCase().includes(searchLower) ||
+            (task.employeeId && task.employeeId.name?.toLowerCase().includes(searchLower)) ||
+            task.notes?.toLowerCase().includes(searchLower);
 
-        // Employee filter is already handled by fetchTasksByEmployee
-        // but we still check here for consistency
         const matchesEmployee = !filters.employee || 
             (task.employeeId && task.employeeId._id === filters.employee);
 
@@ -369,14 +433,37 @@ const TaskAdmin = () => {
             const employee = employees.find(emp => emp._id === newTask.employeeId);
             const enrichedTask = {
                 ...data.task,
-                employeeId: employee || newTask.employeeId,
-                lastUpdated: data.task.lastUpdated || data.task.updatedAt || new Date().toISOString(),
+                employeeId: employee ? {
+                    _id: employee._id,
+                    name: employee.name,
+                    email: employee.email,
+                    position: employee.position,
+                    department: employee.department
+                } : newTask.employeeId,
+                lastUpdated: data.task.lastUpdated || new Date().toISOString(),
                 dueDate: data.task.dueDate || data.task.due,
-                createdAt: data.task.createdAt || data.task.createdDate || new Date().toISOString(),
-                completedAt: data.task.completedAt || data.task.completedDate
+                createdAt: data.task.createdAt || new Date().toISOString(),
+                completedAt: data.task.completedAt || data.task.completedDate,
+                status: data.task.status || 'pending',
+                priority: data.task.priority || 'medium',
+                progress: data.task.progress || 0,
+                type: data.task.type || 'Daily'
             };
 
+            // Add to tasks list
             setTasks(prev => [enrichedTask, ...prev]);
+            
+            // Update cache
+            if (employee) {
+                setEmployeeTasksCache(prev => {
+                    const currentTasks = prev[employee._id] || [];
+                    return {
+                        ...prev,
+                        [employee._id]: [enrichedTask, ...currentTasks]
+                    };
+                });
+            }
+
             setNewTask({
                 title: "",
                 description: "",
@@ -412,13 +499,29 @@ const TaskAdmin = () => {
             
             setTasks(prev => prev.map(task => {
                 if (task._id === taskId) {
-                    const employeeData = task.employeeId;
-                    return { 
+                    const updatedTask = { 
                         ...task, 
                         ...updates,
-                        employeeId: employeeData,
                         lastUpdated: currentDate
                     };
+                    
+                    // Update cache
+                    if (task.employeeId && task.employeeId._id) {
+                        setEmployeeTasksCache(prevCache => {
+                            const employeeTasks = prevCache[task.employeeId._id];
+                            if (employeeTasks) {
+                                return {
+                                    ...prevCache,
+                                    [task.employeeId._id]: employeeTasks.map(t =>
+                                        t._id === taskId ? updatedTask : t
+                                    )
+                                };
+                            }
+                            return prevCache;
+                        });
+                    }
+                    
+                    return updatedTask;
                 }
                 return task;
             }));
@@ -441,7 +544,24 @@ const TaskAdmin = () => {
 
             if (!res.ok) throw new Error("Failed to delete task");
 
+            const taskToDelete = tasks.find(t => t._id === taskId);
+            
             setTasks(prev => prev.filter(task => task._id !== taskId));
+            
+            // Update cache
+            if (taskToDelete && taskToDelete.employeeId && taskToDelete.employeeId._id) {
+                setEmployeeTasksCache(prevCache => {
+                    const employeeTasks = prevCache[taskToDelete.employeeId._id];
+                    if (employeeTasks) {
+                        return {
+                            ...prevCache,
+                            [taskToDelete.employeeId._id]: employeeTasks.filter(t => t._id !== taskId)
+                        };
+                    }
+                    return prevCache;
+                });
+            }
+            
             setActiveDropdown(null);
             toast.success("Task deleted successfully!");
         } catch (err) {
@@ -551,6 +671,11 @@ const TaskAdmin = () => {
         onHold: tasks.filter(t => t.status?.toLowerCase() === 'on hold').length,
         urgent: tasks.filter(t => t.priority === 'urgent').length,
         highPriority: tasks.filter(t => t.priority === 'high').length
+    };
+
+    // Handle refresh
+    const handleRefresh = () => {
+        fetchAllData(true);
     };
 
     return (
@@ -724,7 +849,7 @@ const TaskAdmin = () => {
                         <FileText className="w-8 h-8 text-purple-600" />
                         Task Administration
                         <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                            Public Access
+                            {tasks.length} Tasks Loaded
                         </span>
                     </h2>
                     <div className="flex gap-3">
@@ -736,17 +861,17 @@ const TaskAdmin = () => {
                             Add Task
                         </button>
                         <button
-                            onClick={fetchAllData}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                            disabled={loading}
+                            onClick={handleRefresh}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={loading || refreshing}
                         >
-                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                            Refresh
+                            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                            {refreshing ? 'Refreshing...' : 'Refresh'}
                         </button>
                         <button
                             onClick={exportTasks}
                             disabled={filteredTasks.length === 0}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Download className="w-4 h-4" />
                             Export CSV
@@ -929,7 +1054,7 @@ const TaskAdmin = () => {
                             />
                         </div>
 
-                        {/* Employee Filter - UPDATED */}
+                        {/* Employee Filter */}
                         <select
                             value={filters.employee}
                             onChange={(e) => handleEmployeeFilterChange(e.target.value)}
@@ -996,7 +1121,7 @@ const TaskAdmin = () => {
                             <p className="font-semibold">Error loading tasks</p>
                             <p className="text-sm mt-1">{error}</p>
                             <button
-                                onClick={fetchAllData}
+                                onClick={handleRefresh}
                                 className="mt-3 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
                             >
                                 Try Again
