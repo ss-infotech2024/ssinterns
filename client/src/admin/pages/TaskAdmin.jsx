@@ -21,7 +21,8 @@ const PRIORITY_ICONS = {
     medium: <Flag className="w-3 h-3 text-yellow-600" />,
     high: <Flag className="w-3 h-3 text-orange-600" />,
     urgent: <AlertCircle className="w-3 h-3 text-red-600" />
-};
+};  
+
 
 const STATUS_COLORS = {
     pending: "bg-gray-100 text-gray-800 border border-gray-200",
