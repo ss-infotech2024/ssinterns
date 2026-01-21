@@ -1,10 +1,10 @@
 // src/pages/admin/TaskAdmin.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-    FileText, Search, Filter, Download, Eye, Edit, Trash2, Users,
-    Calendar, Flag, Loader, RefreshCw, Plus, Clock, MessageSquare,
+    FileText, Search, Filter, Download, Eye, Trash2, Users,
+    Calendar, Flag, RefreshCw, Plus, Clock, MessageSquare,
     AlertCircle, CheckCircle, PlayCircle, PauseCircle, MoreVertical, Mail,
-    User, Briefcase, Building
+    User, Briefcase, Building, ChevronUp, ChevronDown, SortAsc, SortDesc
 } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
@@ -61,7 +61,14 @@ const TaskAdmin = () => {
         employee: "",
         status: "",
         priority: "",
-        type: ""
+        type: "",
+        dateRange: "all"
+    });
+
+    // Sorting
+    const [sortConfig, setSortConfig] = useState({
+        key: "lastUpdated",
+        direction: "desc"
     });
 
     // New task form
@@ -109,7 +116,6 @@ const TaskAdmin = () => {
                 }
             }
         } catch (err) {
-            console.error("Error fetching employees:", err);
             toast.error("Failed to load employees");
             return [];
         }
@@ -119,7 +125,7 @@ const TaskAdmin = () => {
     const fetchEmployeeTasks = useCallback(async (employeeId) => {
         try {
             const res = await fetch(`${API_URL}/employee/${employeeId}/tasks`);
-            if (!res.ok) throw new Error(`Failed to fetch tasks for employee ${employeeId}`);
+            if (!res.ok) throw new Error(`Failed to fetch tasks for employee`);
 
             const data = await res.json();
             if (data.success && data.employee && data.employee.tasks) {
@@ -127,20 +133,16 @@ const TaskAdmin = () => {
             }
             return [];
         } catch (err) {
-            console.warn(`Error fetching tasks for employee ${employeeId}:`, err);
             return [];
         }
     }, []);
 
-    // Fetch all tasks in parallel - OPTIMIZED VERSION
+    // Fetch all tasks in parallel
     const fetchAllTasks = useCallback(async (employeesData) => {
-        console.log(`Fetching tasks for ${employeesData.length} employees in parallel...`);
-
         // Create an array of promises for each employee's tasks
         const taskPromises = employeesData.map(emp =>
             fetchEmployeeTasks(emp._id)
                 .then(tasks => {
-                    console.log(`Fetched ${tasks.length} tasks for employee ${emp.name}`);
                     return tasks.map(task => ({
                         ...task,
                         employeeId: {
@@ -161,33 +163,21 @@ const TaskAdmin = () => {
                         type: task.type || 'Daily'
                     }));
                 })
-                .catch(err => {
-                    console.warn(`Failed to fetch tasks for employee ${emp.name}:`, err);
-                    return []; // Return empty array if fetch fails
+                .catch(() => {
+                    return [];
                 })
         );
 
         try {
-            // Execute all promises in parallel with Promise.allSettled
             const results = await Promise.allSettled(taskPromises);
 
-            // Combine all successful results
             let allTasks = [];
-            let successCount = 0;
-            let failedCount = 0;
 
-            results.forEach((result, index) => {
+            results.forEach((result) => {
                 if (result.status === 'fulfilled') {
                     allTasks = [...allTasks, ...result.value];
-                    successCount++;
-                } else {
-                    console.warn(`Failed to fetch tasks for employee ${employeesData[index]?.name}:`, result.reason);
-                    failedCount++;
                 }
             });
-
-            console.log(`Successfully fetched tasks from ${successCount} employees, ${failedCount} failed`);
-            console.log(`Total tasks loaded: ${allTasks.length}`);
 
             // Sort tasks by lastUpdated (newest first)
             allTasks.sort((a, b) => {
@@ -209,42 +199,31 @@ const TaskAdmin = () => {
             });
 
             setEmployeeTasksCache(cache);
-
             return allTasks;
         } catch (err) {
-            console.error("Error in parallel task fetching:", err);
             throw err;
         }
     }, [fetchEmployeeTasks]);
 
-    // Fetch all data - OPTIMIZED
+    // Fetch all data
     const fetchAllData = useCallback(async (isRefresh = false) => {
         setLoading(!isRefresh);
         setRefreshing(isRefresh);
         setError(null);
 
         try {
-            console.log("Starting data fetch...");
-
-            // Fetch employees first
             const employeesData = await fetchEmployees();
             if (employeesData.length === 0) {
                 throw new Error("No employees found");
             }
 
-            // Fetch all tasks in parallel
             const allTasks = await fetchAllTasks(employeesData);
-
             setTasks(allTasks);
 
             if (isRefresh) {
-                toast.success(`Refreshed! Loaded ${allTasks.length} tasks from ${employeesData.length} employees`);
-            } else {
-                console.log(`Successfully loaded ${allTasks.length} tasks`);
+                toast.success(`Refreshed! Loaded ${allTasks.length} tasks`);
             }
-
         } catch (err) {
-            console.error("Fetch error:", err);
             setError(err.message);
             toast.error(`Failed to load data: ${err.message}`);
         } finally {
@@ -270,14 +249,12 @@ const TaskAdmin = () => {
 
             // Check cache first
             if (employeeTasksCache[employeeId]) {
-                console.log(`Using cached tasks for employee ${employee.name}`);
                 setTasks(employeeTasksCache[employeeId]);
                 toast.success(`Showing ${employeeTasksCache[employeeId].length} cached tasks for ${employee.name}`);
                 setLoading(false);
                 return;
             }
 
-            console.log(`Fetching fresh tasks for employee ${employee.name}`);
             const employeeTasks = await fetchEmployeeTasks(employeeId);
 
             // Enrich tasks with employee information
@@ -311,14 +288,13 @@ const TaskAdmin = () => {
 
             toast.success(`Showing ${enrichedTasks.length} tasks for ${employee.name}`);
         } catch (err) {
-            console.error("Error fetching employee tasks:", err);
             toast.error("Failed to load employee tasks");
 
             // Fall back to cached data if available
             if (employeeTasksCache[employeeId]) {
                 setTasks(employeeTasksCache[employeeId]);
             } else {
-                fetchAllData(); // Fall back to all tasks
+                fetchAllData();
             }
         } finally {
             setLoading(false);
@@ -341,29 +317,108 @@ const TaskAdmin = () => {
         }
     };
 
-    // Filter tasks
-    const filteredTasks = tasks.filter(task => {
-        const searchLower = filters.search.toLowerCase();
-        const matchesSearch = !filters.search ||
-            task.title?.toLowerCase().includes(searchLower) ||
-            task.description?.toLowerCase().includes(searchLower) ||
-            (task.employeeId && task.employeeId.name?.toLowerCase().includes(searchLower)) ||
-            task.notes?.toLowerCase().includes(searchLower);
+    // Handle sort
+    const handleSort = (key) => {
+        setSortConfig(prev => ({
+            key,
+            direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+        }));
+    };
 
-        const matchesEmployee = !filters.employee ||
-            (task.employeeId && task.employeeId._id === filters.employee);
+    // Get sort icon
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) return <SortAsc className="w-3 h-3 ml-1" />;
+        return sortConfig.direction === 'asc' ?
+            <ChevronUp className="w-3 h-3 ml-1" /> :
+            <ChevronDown className="w-3 h-3 ml-1" />;
+    };
 
-        const matchesStatus = !filters.status ||
-            (task.status?.toLowerCase() === filters.status.toLowerCase());
+    // Filter and sort tasks with useMemo
+    const filteredAndSortedTasks = useMemo(() => {
+        let filtered = tasks.filter(task => {
+            const searchLower = filters.search.toLowerCase();
+            const matchesSearch = !filters.search ||
+                task.title?.toLowerCase().includes(searchLower) ||
+                task.description?.toLowerCase().includes(searchLower) ||
+                (task.employeeId && task.employeeId.name?.toLowerCase().includes(searchLower)) ||
+                task.notes?.toLowerCase().includes(searchLower);
 
-        const matchesPriority = !filters.priority ||
-            task.priority === filters.priority;
+            const matchesEmployee = !filters.employee ||
+                (task.employeeId && task.employeeId._id === filters.employee);
 
-        const matchesType = !filters.type ||
-            task.type === filters.type;
+            const matchesStatus = !filters.status ||
+                (task.status?.toLowerCase() === filters.status.toLowerCase());
 
-        return matchesSearch && matchesEmployee && matchesStatus && matchesPriority && matchesType;
-    });
+            const matchesPriority = !filters.priority ||
+                task.priority === filters.priority;
+
+            const matchesType = !filters.type ||
+                task.type === filters.type;
+
+            // Date range filter
+            let matchesDateRange = true;
+            if (filters.dateRange !== "all") {
+                const today = new Date();
+                const taskDate = new Date(task.dueDate || task.createdAt);
+
+                switch (filters.dateRange) {
+                    case "today":
+                        matchesDateRange = taskDate.toDateString() === today.toDateString();
+                        break;
+                    case "thisWeek":
+                        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+                        matchesDateRange = taskDate >= startOfWeek;
+                        break;
+                    case "thisMonth":
+                        matchesDateRange = taskDate.getMonth() === today.getMonth() &&
+                            taskDate.getFullYear() === today.getFullYear();
+                        break;
+                    case "overdue":
+                        matchesDateRange = task.dueDate && new Date(task.dueDate) < new Date();
+                        break;
+                    case "upcoming":
+                        matchesDateRange = task.dueDate && new Date(task.dueDate) > new Date();
+                        break;
+                }
+            }
+
+            return matchesSearch && matchesEmployee && matchesStatus &&
+                matchesPriority && matchesType && matchesDateRange;
+        });
+
+        // Apply sorting
+        filtered.sort((a, b) => {
+            let aValue = a[sortConfig.key];
+            let bValue = b[sortConfig.key];
+
+            // Handle nested properties
+            if (sortConfig.key === 'employeeName' && a.employeeId) {
+                aValue = a.employeeId.name || '';
+                bValue = b.employeeId.name || '';
+            }
+
+            // Handle dates
+            if (sortConfig.key.includes('Date') || sortConfig.key.includes('At') ||
+                sortConfig.key === 'createdAt' || sortConfig.key === 'lastUpdated' ||
+                sortConfig.key === 'dueDate' || sortConfig.key === 'completedAt') {
+                aValue = new Date(aValue || 0);
+                bValue = new Date(bValue || 0);
+            }
+
+            // Handle numeric values
+            if (sortConfig.key === 'progress') {
+                aValue = aValue || 0;
+                bValue = bValue || 0;
+            }
+
+            // Compare values
+            if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return filtered;
+    }, [tasks, filters, sortConfig]);
 
     // Get employee name for display
     const getEmployeeName = (employeeId) => {
@@ -403,9 +458,10 @@ const TaskAdmin = () => {
             employee: "",
             status: "",
             priority: "",
-            type: ""
+            type: "",
+            dateRange: "all"
         });
-        fetchAllData(); // Reset to show all tasks
+        fetchAllData();
         toast.success("Filters cleared");
     };
 
@@ -498,7 +554,6 @@ const TaskAdmin = () => {
 
             if (!res.ok) throw new Error(data.message || "Failed to update task");
 
-            // Get current date for lastUpdated
             const currentDate = new Date().toISOString();
 
             setTasks(prev => prev.map(task => {
@@ -580,16 +635,86 @@ const TaskAdmin = () => {
         setActiveDropdown(null);
     };
 
-    // Export tasks to CSV - FIXED VERSION
-    const exportTasksAsExcel = () => {
-        if (filteredTasks.length === 0) {
+    // Format date
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "N/A";
+
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (err) {
+            return "N/A";
+        }
+    };
+
+    // Format datetime
+    const formatDateTime = (dateString) => {
+        if (!dateString) return "N/A";
+
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "N/A";
+
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (err) {
+            return "N/A";
+        }
+    };
+
+    // Export tasks to CSV - DATE WISE
+    const exportTasksAsExcel = (dateRange = "all") => {
+        if (filteredAndSortedTasks.length === 0) {
             toast.error("No tasks to export");
             return;
         }
 
         try {
+            // Filter by date range if specified
+            let tasksToExport = [...filteredAndSortedTasks];
+
+            if (dateRange !== "all") {
+                const today = new Date();
+                tasksToExport = tasksToExport.filter(task => {
+                    const taskDate = new Date(task.dueDate || task.createdAt);
+
+                    switch (dateRange) {
+                        case "today":
+                            return taskDate.toDateString() === today.toDateString();
+                        case "thisWeek":
+                            const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+                            return taskDate >= startOfWeek;
+                        case "thisMonth":
+                            return taskDate.getMonth() === today.getMonth() &&
+                                taskDate.getFullYear() === today.getFullYear();
+                        case "overdue":
+                            return task.dueDate && new Date(task.dueDate) < new Date();
+                        case "upcoming":
+                            return task.dueDate && new Date(task.dueDate) > new Date();
+                        default:
+                            return true;
+                    }
+                });
+            }
+
+            if (tasksToExport.length === 0) {
+                toast.error(`No tasks found for ${dateRange}`);
+                return;
+            }
+
             // Prepare data for export
-            const exportData = filteredTasks.map((task, index) => {
+            const exportData = tasksToExport.map((task, index) => {
                 const employee = getEmployeeObject(task.employeeId);
                 return {
                     "S.No": index + 1,
@@ -626,9 +751,7 @@ const TaskAdmin = () => {
 
                     // Handle special characters
                     if (typeof value === 'string') {
-                        // Escape quotes
                         value = value.replace(/"/g, '""');
-                        // Wrap in quotes if contains comma or quotes
                         if (value.includes(',') || value.includes('"') || value.includes('\n')) {
                             value = `"${value}"`;
                         }
@@ -645,75 +768,55 @@ const TaskAdmin = () => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
 
-            // Create filename
+            // Create filename with date range
             const now = new Date();
             const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
             const timeStr = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
 
+            let rangeText = "";
+            if (dateRange !== "all") {
+                rangeText = `_${dateRange}`;
+            }
+
             a.href = url;
-            a.download = `Tasks_Export_${dateStr}_${timeStr}.csv`;
+            a.download = `Tasks${rangeText}_${dateStr}_${timeStr}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
 
-            toast.success(`Successfully exported ${exportData.length} tasks to CSV`);
+            toast.success(`Successfully exported ${exportData.length} tasks (${dateRange}) to CSV`);
         } catch (error) {
-            console.error("Export error:", error);
             toast.error("Failed to export tasks. Please try again.");
         }
     };
 
-    // Format date
-    const formatDate = (dateString) => {
-        if (!dateString) return "N/A";
-
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return "N/A";
-
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        } catch (err) {
-            console.warn("Error formatting date:", dateString, err);
-            return "N/A";
-        }
-    };
-
-    // Format datetime
-    const formatDateTime = (dateString) => {
-        if (!dateString) return "N/A";
-
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return "N/A";
-
-            return date.toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } catch (err) {
-            console.warn("Error formatting datetime:", dateString, err);
-            return "N/A";
-        }
-    };
-
     // Calculate task statistics
-    const taskStats = {
-        total: tasks.length,
-        completed: tasks.filter(t => t.status?.toLowerCase() === 'completed').length,
-        inProgress: tasks.filter(t => t.status?.toLowerCase() === 'in progress').length,
-        pending: tasks.filter(t => t.status?.toLowerCase() === 'pending').length,
-        onHold: tasks.filter(t => t.status?.toLowerCase() === 'on hold').length,
-        urgent: tasks.filter(t => t.priority === 'urgent').length,
-        highPriority: tasks.filter(t => t.priority === 'high').length
-    };
+    const taskStats = useMemo(() => {
+        const today = new Date();
+        const thisWeekStart = new Date(today.setDate(today.getDate() - today.getDay()));
+        const thisMonth = today.getMonth();
+
+        return {
+            total: tasks.length,
+            completed: tasks.filter(t => t.status?.toLowerCase() === 'completed').length,
+            inProgress: tasks.filter(t => t.status?.toLowerCase() === 'in progress').length,
+            pending: tasks.filter(t => t.status?.toLowerCase() === 'pending').length,
+            overdue: tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date()).length,
+            today: tasks.filter(t => {
+                const taskDate = new Date(t.dueDate || t.createdAt);
+                return taskDate.toDateString() === today.toDateString();
+            }).length,
+            thisWeek: tasks.filter(t => {
+                const taskDate = new Date(t.dueDate || t.createdAt);
+                return taskDate >= thisWeekStart;
+            }).length,
+            thisMonth: tasks.filter(t => {
+                const taskDate = new Date(t.dueDate || t.createdAt);
+                return taskDate.getMonth() === thisMonth;
+            }).length
+        };
+    }, [tasks]);
 
     // Handle refresh
     const handleRefresh = () => {
@@ -910,34 +1013,56 @@ const TaskAdmin = () => {
                             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                             {refreshing ? 'Refreshing...' : 'Refresh'}
                         </button>
-                        <button
-                            onClick={exportTasksAsExcel}
-                            disabled={filteredTasks.length === 0}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <Download className="w-4 h-4" />
-                            Export CSV
-                        </button>
-                    </div>
-                </div>
-
-                {/* Debug Info */}
-                {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h4 className="text-red-800 font-semibold">Error Details:</h4>
-                                <p className="text-red-600 text-sm">{error}</p>
-                            </div>
+                        <div className="relative group">
                             <button
-                                onClick={() => setError(null)}
-                                className="text-red-600 hover:text-red-800"
+                                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
                             >
-                                ✕
+                                <Download className="w-4 h-4" />
+                                Export CSV
                             </button>
+                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <div className="py-1">
+                                    <button
+                                        onClick={() => exportTasksAsExcel("all")}
+                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                    >
+                                        All Tasks
+                                    </button>
+                                    <button
+                                        onClick={() => exportTasksAsExcel("today")}
+                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                    >
+                                        Today's Tasks
+                                    </button>
+                                    <button
+                                        onClick={() => exportTasksAsExcel("thisWeek")}
+                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                    >
+                                        This Week's Tasks
+                                    </button>
+                                    <button
+                                        onClick={() => exportTasksAsExcel("thisMonth")}
+                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                    >
+                                        This Month's Tasks
+                                    </button>
+                                    <button
+                                        onClick={() => exportTasksAsExcel("overdue")}
+                                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                    >
+                                        Overdue Tasks
+                                    </button>
+                                    <button
+                                        onClick={() => exportTasksAsExcel("upcoming")}
+                                        className="flex items-center px-4 py-2 text-sm text-green-600 hover:bg-green-50 w-full text-left"
+                                    >
+                                        Upcoming Tasks
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                )}
+                </div>
 
                 {/* Enhanced Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
@@ -958,16 +1083,16 @@ const TaskAdmin = () => {
                         <div className="text-sm text-gray-600">Pending</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-                        <div className="text-2xl font-bold text-purple-600">{taskStats.onHold}</div>
-                        <div className="text-sm text-gray-600">On Hold</div>
+                        <div className="text-2xl font-bold text-red-600">{taskStats.overdue}</div>
+                        <div className="text-sm text-gray-600">Overdue</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-                        <div className="text-2xl font-bold text-red-600">{taskStats.urgent}</div>
-                        <div className="text-sm text-gray-600">Urgent</div>
+                        <div className="text-2xl font-bold text-teal-600">{taskStats.today}</div>
+                        <div className="text-sm text-gray-600">Today</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-                        <div className="text-2xl font-bold text-orange-600">{taskStats.highPriority}</div>
-                        <div className="text-sm text-gray-600">High Priority</div>
+                        <div className="text-2xl font-bold text-indigo-600">{taskStats.thisWeek}</div>
+                        <div className="text-sm text-gray-600">This Week</div>
                     </div>
                 </div>
 
@@ -1073,7 +1198,7 @@ const TaskAdmin = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
                             <Filter className="w-5 h-5" />
-                            Filters
+                            Filters & Sorting
                         </h3>
                         <button
                             onClick={clearFilters}
@@ -1083,7 +1208,7 @@ const TaskAdmin = () => {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                         {/* Search */}
                         <div className="relative">
                             <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
@@ -1123,6 +1248,20 @@ const TaskAdmin = () => {
                             <option value="on hold">On Hold</option>
                         </select>
 
+                        {/* Date Range Filter */}
+                        <select
+                            value={filters.dateRange}
+                            onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
+                            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="all">All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="thisWeek">This Week</option>
+                            <option value="thisMonth">This Month</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="upcoming">Upcoming</option>
+                        </select>
+
                         {/* Priority Filter */}
                         <select
                             value={filters.priority}
@@ -1149,9 +1288,43 @@ const TaskAdmin = () => {
                             <option value="Project">Project</option>
                         </select>
                     </div>
+
+                    {/* Sorting Options */}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                            onClick={() => handleSort("createdAt")}
+                            className={`px-3 py-1 text-sm rounded-lg flex items-center ${sortConfig.key === "createdAt" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}`}
+                        >
+                            Created Date {getSortIcon("createdAt")}
+                        </button>
+                        <button
+                            onClick={() => handleSort("dueDate")}
+                            className={`px-3 py-1 text-sm rounded-lg flex items-center ${sortConfig.key === "dueDate" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}`}
+                        >
+                            Due Date {getSortIcon("dueDate")}
+                        </button>
+                        <button
+                            onClick={() => handleSort("lastUpdated")}
+                            className={`px-3 py-1 text-sm rounded-lg flex items-center ${sortConfig.key === "lastUpdated" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}`}
+                        >
+                            Last Updated {getSortIcon("lastUpdated")}
+                        </button>
+                        <button
+                            onClick={() => handleSort("priority")}
+                            className={`px-3 py-1 text-sm rounded-lg flex items-center ${sortConfig.key === "priority" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}`}
+                        >
+                            Priority {getSortIcon("priority")}
+                        </button>
+                        <button
+                            onClick={() => handleSort("employeeName")}
+                            className={`px-3 py-1 text-sm rounded-lg flex items-center ${sortConfig.key === "employeeName" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}`}
+                        >
+                            Employee Name {getSortIcon("employeeName")}
+                        </button>
+                    </div>
                 </div>
 
-                {/* Enhanced Tasks Table with Employee Info in Right Side */}
+                {/* Enhanced Tasks Table */}
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                     {loading ? (
                         <div className="p-8 text-center">
@@ -1169,7 +1342,7 @@ const TaskAdmin = () => {
                                 Try Again
                             </button>
                         </div>
-                    ) : filteredTasks.length > 0 ? (
+                    ) : filteredAndSortedTasks.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -1195,14 +1368,16 @@ const TaskAdmin = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredTasks.map((task) => {
+                                    {filteredAndSortedTasks.map((task) => {
                                         const employee = getEmployeeObject(task.employeeId);
+                                        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+                                        const isToday = task.dueDate && new Date(task.dueDate).toDateString() === new Date().toDateString();
+
                                         return (
-                                            <tr key={task._id} className="hover:bg-gray-50">
-                                                {/* Task Details Column - Left Side */}
+                                            <tr key={task._id} className={`hover:bg-gray-50 ${isOverdue ? 'bg-red-50' : isToday ? 'bg-blue-50' : ''}`}>
+                                                {/* Task Details Column */}
                                                 <td className="px-6 py-4">
                                                     <div className="space-y-3">
-                                                        {/* Task ID and Title Section */}
                                                         <div className="space-y-2">
                                                             <div className="flex items-start justify-between">
                                                                 <div className="flex-1">
@@ -1213,6 +1388,16 @@ const TaskAdmin = () => {
                                                                         <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${TYPE_COLORS[task.type] || "bg-gray-100 text-gray-800"}`}>
                                                                             {task.type}
                                                                         </div>
+                                                                        {isOverdue && (
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                                Overdue
+                                                                            </span>
+                                                                        )}
+                                                                        {isToday && (
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                                Today
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                     <div className="mt-2">
                                                                         <div className="text-sm font-semibold text-gray-900">
@@ -1233,11 +1418,10 @@ const TaskAdmin = () => {
                                                     </div>
                                                 </td>
 
-                                                {/* Employee Information Column - Right Side of Task ID */}
+                                                {/* Employee Information Column */}
                                                 <td className="px-6 py-4">
                                                     {employee ? (
                                                         <div className="space-y-3">
-                                                            {/* Employee Name and Email Section */}
                                                             <div className="space-y-2">
                                                                 <div className="flex items-center space-x-3">
                                                                     <div className="flex-shrink-0">
@@ -1265,7 +1449,6 @@ const TaskAdmin = () => {
                                                                 </div>
                                                             </div>
 
-                                                            {/* Department and Position Section */}
                                                             <div className="grid grid-cols-2 gap-2 text-xs">
                                                                 <div className="flex items-center space-x-1">
                                                                     <Building className="w-3 h-3 text-gray-400" />
@@ -1326,7 +1509,9 @@ const TaskAdmin = () => {
                                                     <div className="space-y-1">
                                                         <div className="flex items-center">
                                                             <Calendar className="w-3 h-3 mr-1" />
-                                                            Due: {formatDate(task.dueDate) || "No due date"}
+                                                            <span className={isOverdue ? "text-red-600 font-medium" : ""}>
+                                                                Due: {formatDate(task.dueDate) || "No due date"}
+                                                            </span>
                                                         </div>
                                                         <div>Created: {formatDate(task.createdAt)}</div>
                                                         <div>Updated: {formatDate(task.lastUpdated) || formatDate(task.updatedAt) || "N/A"}</div>
@@ -1385,7 +1570,7 @@ const TaskAdmin = () => {
                             <p className="text-gray-500">
                                 {filters.employee
                                     ? `No tasks found for selected employee.`
-                                    : filters.search || filters.status || filters.priority || filters.type
+                                    : filters.search || filters.status || filters.priority || filters.type || filters.dateRange !== "all"
                                         ? "No tasks match your filters. Try changing your filter criteria."
                                         : "No tasks have been created yet."}
                             </p>
@@ -1400,15 +1585,21 @@ const TaskAdmin = () => {
                 </div>
 
                 {/* Summary */}
-                {filteredTasks.length > 0 && (
+                {filteredAndSortedTasks.length > 0 && (
                     <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-                        <div className="text-sm text-gray-600">
-                            Showing {filteredTasks.length} {filters.employee ? "employee" : ""} task{filteredTasks.length !== 1 ? 's' : ''}
-                            {filters.search && ` matching "${filters.search}"`}
-                            {filters.employee && ` for ${employees.find(e => e._id === filters.employee)?.name || "selected employee"}`}
-                            {filters.status && ` with status "${filters.status}"`}
-                            {filters.priority && ` with priority "${filters.priority}"`}
-                            {filters.type && ` of type "${filters.type}"`}
+                        <div className="flex justify-between items-center">
+                            <div className="text-sm text-gray-600">
+                                Showing {filteredAndSortedTasks.length} {filters.employee ? "employee" : ""} task{filteredAndSortedTasks.length !== 1 ? 's' : ''}
+                                {filters.search && ` matching "${filters.search}"`}
+                                {filters.employee && ` for ${employees.find(e => e._id === filters.employee)?.name || "selected employee"}`}
+                                {filters.status && ` with status "${filters.status}"`}
+                                {filters.priority && ` with priority "${filters.priority}"`}
+                                {filters.type && ` of type "${filters.type}"`}
+                                {filters.dateRange !== "all" && ` for ${filters.dateRange}`}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                Sorted by: {sortConfig.key} ({sortConfig.direction})
+                            </div>
                         </div>
                     </div>
                 )}
