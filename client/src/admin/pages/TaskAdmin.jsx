@@ -3,7 +3,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
     FileText, Search, Filter, Download, Eye, Edit, Trash2, Users,
     Calendar, Flag, Loader, RefreshCw, Plus, Clock, MessageSquare,
-    AlertCircle, CheckCircle, PlayCircle, PauseCircle, MoreVertical
+    AlertCircle, CheckCircle, PlayCircle, PauseCircle, MoreVertical, Mail,
+    User, Briefcase, Building
 } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
@@ -119,7 +120,7 @@ const TaskAdmin = () => {
         try {
             const res = await fetch(`${API_URL}/employee/${employeeId}/tasks`);
             if (!res.ok) throw new Error(`Failed to fetch tasks for employee ${employeeId}`);
-            
+
             const data = await res.json();
             if (data.success && data.employee && data.employee.tasks) {
                 return data.employee.tasks;
@@ -134,7 +135,7 @@ const TaskAdmin = () => {
     // Fetch all tasks in parallel - OPTIMIZED VERSION
     const fetchAllTasks = useCallback(async (employeesData) => {
         console.log(`Fetching tasks for ${employeesData.length} employees in parallel...`);
-        
+
         // Create an array of promises for each employee's tasks
         const taskPromises = employeesData.map(emp =>
             fetchEmployeeTasks(emp._id)
@@ -147,7 +148,8 @@ const TaskAdmin = () => {
                             name: emp.name,
                             email: emp.email,
                             position: emp.position,
-                            department: emp.department
+                            department: emp.department,
+                            profilePicture: emp.profilePicture
                         },
                         lastUpdated: task.lastUpdated || task.updatedAt || task.updatedDate,
                         dueDate: task.dueDate || task.due,
@@ -168,12 +170,12 @@ const TaskAdmin = () => {
         try {
             // Execute all promises in parallel with Promise.allSettled
             const results = await Promise.allSettled(taskPromises);
-            
+
             // Combine all successful results
             let allTasks = [];
             let successCount = 0;
             let failedCount = 0;
-            
+
             results.forEach((result, index) => {
                 if (result.status === 'fulfilled') {
                     allTasks = [...allTasks, ...result.value];
@@ -205,9 +207,9 @@ const TaskAdmin = () => {
                     cache[empId].push(task);
                 }
             });
-            
+
             setEmployeeTasksCache(cache);
-            
+
             return allTasks;
         } catch (err) {
             console.error("Error in parallel task fetching:", err);
@@ -277,7 +279,7 @@ const TaskAdmin = () => {
 
             console.log(`Fetching fresh tasks for employee ${employee.name}`);
             const employeeTasks = await fetchEmployeeTasks(employeeId);
-            
+
             // Enrich tasks with employee information
             const enrichedTasks = employeeTasks.map(task => ({
                 ...task,
@@ -286,7 +288,8 @@ const TaskAdmin = () => {
                     name: employee.name,
                     email: employee.email,
                     position: employee.position,
-                    department: employee.department
+                    department: employee.department,
+                    profilePicture: employee.profilePicture
                 },
                 lastUpdated: task.lastUpdated || task.updatedAt || task.updatedDate,
                 dueDate: task.dueDate || task.due,
@@ -299,7 +302,7 @@ const TaskAdmin = () => {
             }));
 
             setTasks(enrichedTasks);
-            
+
             // Update cache
             setEmployeeTasksCache(prev => ({
                 ...prev,
@@ -310,7 +313,7 @@ const TaskAdmin = () => {
         } catch (err) {
             console.error("Error fetching employee tasks:", err);
             toast.error("Failed to load employee tasks");
-            
+
             // Fall back to cached data if available
             if (employeeTasksCache[employeeId]) {
                 setTasks(employeeTasksCache[employeeId]);
@@ -330,7 +333,7 @@ const TaskAdmin = () => {
     // Handle employee filter change
     const handleEmployeeFilterChange = (employeeId) => {
         setFilters(prev => ({ ...prev, employee: employeeId }));
-        
+
         if (employeeId) {
             fetchTasksByEmployee(employeeId);
         } else {
@@ -347,16 +350,16 @@ const TaskAdmin = () => {
             (task.employeeId && task.employeeId.name?.toLowerCase().includes(searchLower)) ||
             task.notes?.toLowerCase().includes(searchLower);
 
-        const matchesEmployee = !filters.employee || 
+        const matchesEmployee = !filters.employee ||
             (task.employeeId && task.employeeId._id === filters.employee);
 
-        const matchesStatus = !filters.status || 
+        const matchesStatus = !filters.status ||
             (task.status?.toLowerCase() === filters.status.toLowerCase());
-        
-        const matchesPriority = !filters.priority || 
+
+        const matchesPriority = !filters.priority ||
             task.priority === filters.priority;
-        
-        const matchesType = !filters.type || 
+
+        const matchesType = !filters.type ||
             task.type === filters.type;
 
         return matchesSearch && matchesEmployee && matchesStatus && matchesPriority && matchesType;
@@ -365,31 +368,31 @@ const TaskAdmin = () => {
     // Get employee name for display
     const getEmployeeName = (employeeId) => {
         if (!employeeId) return "Unassigned";
-        
+
         if (typeof employeeId === 'object' && employeeId.name) {
             return employeeId.name;
         }
-        
+
         if (typeof employeeId === 'string') {
             const employee = employees.find(emp => emp._id === employeeId);
             return employee ? employee.name : "Unknown";
         }
-        
+
         return "Unassigned";
     };
 
     // Get employee object for display
     const getEmployeeObject = (employeeId) => {
         if (!employeeId) return null;
-        
+
         if (typeof employeeId === 'object' && employeeId._id) {
             return employeeId;
         }
-        
+
         if (typeof employeeId === 'string') {
             return employees.find(emp => emp._id === employeeId);
         }
-        
+
         return null;
     };
 
@@ -438,7 +441,8 @@ const TaskAdmin = () => {
                     name: employee.name,
                     email: employee.email,
                     position: employee.position,
-                    department: employee.department
+                    department: employee.department,
+                    profilePicture: employee.profilePicture
                 } : newTask.employeeId,
                 lastUpdated: data.task.lastUpdated || new Date().toISOString(),
                 dueDate: data.task.dueDate || data.task.due,
@@ -452,7 +456,7 @@ const TaskAdmin = () => {
 
             // Add to tasks list
             setTasks(prev => [enrichedTask, ...prev]);
-            
+
             // Update cache
             if (employee) {
                 setEmployeeTasksCache(prev => {
@@ -496,15 +500,15 @@ const TaskAdmin = () => {
 
             // Get current date for lastUpdated
             const currentDate = new Date().toISOString();
-            
+
             setTasks(prev => prev.map(task => {
                 if (task._id === taskId) {
-                    const updatedTask = { 
-                        ...task, 
+                    const updatedTask = {
+                        ...task,
                         ...updates,
                         lastUpdated: currentDate
                     };
-                    
+
                     // Update cache
                     if (task.employeeId && task.employeeId._id) {
                         setEmployeeTasksCache(prevCache => {
@@ -520,12 +524,12 @@ const TaskAdmin = () => {
                             return prevCache;
                         });
                     }
-                    
+
                     return updatedTask;
                 }
                 return task;
             }));
-            
+
             setActiveDropdown(null);
             toast.success("Task updated successfully!");
         } catch (err) {
@@ -545,9 +549,9 @@ const TaskAdmin = () => {
             if (!res.ok) throw new Error("Failed to delete task");
 
             const taskToDelete = tasks.find(t => t._id === taskId);
-            
+
             setTasks(prev => prev.filter(task => task._id !== taskId));
-            
+
             // Update cache
             if (taskToDelete && taskToDelete.employeeId && taskToDelete.employeeId._id) {
                 setEmployeeTasksCache(prevCache => {
@@ -561,7 +565,7 @@ const TaskAdmin = () => {
                     return prevCache;
                 });
             }
-            
+
             setActiveDropdown(null);
             toast.success("Task deleted successfully!");
         } catch (err) {
@@ -576,60 +580,98 @@ const TaskAdmin = () => {
         setActiveDropdown(null);
     };
 
-    // Export tasks
-    const exportTasks = () => {
+    // Export tasks to CSV - FIXED VERSION
+    const exportTasksAsExcel = () => {
         if (filteredTasks.length === 0) {
             toast.error("No tasks to export");
             return;
         }
 
-        const exportData = filteredTasks.map(task => {
-            const employee = getEmployeeObject(task.employeeId);
-            return {
-                "Task ID": task._id,
-                "Title": task.title,
-                "Description": task.description,
-                "Employee": employee ? employee.name : "Unassigned",
-                "Email": employee ? employee.email : "N/A",
-                "Department": employee ? employee.department : "N/A",
-                "Position": employee ? employee.position : "N/A",
-                "Status": task.status,
-                "Priority": task.priority,
-                "Type": task.type,
-                "Progress": `${task.progress}%`,
-                "Due Date": task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A",
-                "Created": task.createdAt ? new Date(task.createdAt).toLocaleDateString() : "N/A",
-                "Last Updated": task.lastUpdated ? new Date(task.lastUpdated).toLocaleDateString() : "N/A",
-                "Completed At": task.completedAt ? new Date(task.completedAt).toLocaleDateString() : "N/A",
-                "Notes": task.notes || "N/A"
-            };
-        });
+        try {
+            // Prepare data for export
+            const exportData = filteredTasks.map((task, index) => {
+                const employee = getEmployeeObject(task.employeeId);
+                return {
+                    "S.No": index + 1,
+                    "Task ID": task._id || "N/A",
+                    "Employee Name": employee ? employee.name : "Unassigned",
+                    "Employee Email": employee ? employee.email : "N/A",
+                    "Department": employee ? employee.department : "N/A",
+                    "Position": employee ? employee.position : "N/A",
+                    "Title": task.title || "N/A",
+                    "Description": task.description || "N/A",
+                    "Status": task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : "N/A",
+                    "Priority": task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : "N/A",
+                    "Task Type": task.type || "N/A",
+                    "Progress (%)": task.progress || 0,
+                    "Due Date": task.dueDate ? formatDate(task.dueDate) : "N/A",
+                    "Created Date": task.createdAt ? formatDate(task.createdAt) : "N/A",
+                    "Last Updated": task.lastUpdated ? formatDate(task.lastUpdated) : "N/A",
+                    "Completed At": task.completedAt ? formatDate(task.completedAt) : "N/A",
+                    "Notes": task.notes || "N/A"
+                };
+            });
 
-        const csvHeaders = Object.keys(exportData[0]).join(",");
-        const csvRows = exportData.map(row =>
-            Object.values(row).map(value => `"${String(value).replace(/"/g, '""')}"`).join(",")
-        ).join("\n");
+            // Convert to CSV
+            let csvContent = "";
 
-        const csvContent = [csvHeaders, ...csvRows].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `all-tasks-${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+            // Add headers
+            const headers = Object.keys(exportData[0]);
+            csvContent += headers.join(",") + "\n";
 
-        toast.success("Tasks exported successfully!");
+            // Add rows
+            exportData.forEach(row => {
+                const values = headers.map(header => {
+                    let value = row[header];
+
+                    // Handle special characters
+                    if (typeof value === 'string') {
+                        // Escape quotes
+                        value = value.replace(/"/g, '""');
+                        // Wrap in quotes if contains comma or quotes
+                        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                            value = `"${value}"`;
+                        }
+                    }
+
+                    return value;
+                });
+
+                csvContent += values.join(",") + "\n";
+            });
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+
+            // Create filename
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+
+            a.href = url;
+            a.download = `Tasks_Export_${dateStr}_${timeStr}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            toast.success(`Successfully exported ${exportData.length} tasks to CSV`);
+        } catch (error) {
+            console.error("Export error:", error);
+            toast.error("Failed to export tasks. Please try again.");
+        }
     };
 
     // Format date
     const formatDate = (dateString) => {
         if (!dateString) return "N/A";
-        
+
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return "N/A";
-            
+
             return date.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
@@ -644,11 +686,11 @@ const TaskAdmin = () => {
     // Format datetime
     const formatDateTime = (dateString) => {
         if (!dateString) return "N/A";
-        
+
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return "N/A";
-            
+
             return date.toLocaleString('en-US', {
                 year: 'numeric',
                 month: 'short',
@@ -869,7 +911,7 @@ const TaskAdmin = () => {
                             {refreshing ? 'Refreshing...' : 'Refresh'}
                         </button>
                         <button
-                            onClick={exportTasks}
+                            onClick={exportTasksAsExcel}
                             disabled={filteredTasks.length === 0}
                             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -1109,7 +1151,7 @@ const TaskAdmin = () => {
                     </div>
                 </div>
 
-                {/* Enhanced Tasks Table */}
+                {/* Enhanced Tasks Table with Employee Info in Right Side */}
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                     {loading ? (
                         <div className="p-8 text-center">
@@ -1136,7 +1178,7 @@ const TaskAdmin = () => {
                                             Task Details
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Employee
+                                            Employee Information
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status & Priority
@@ -1157,48 +1199,93 @@ const TaskAdmin = () => {
                                         const employee = getEmployeeObject(task.employeeId);
                                         return (
                                             <tr key={task._id} className="hover:bg-gray-50">
+                                                {/* Task Details Column - Left Side */}
                                                 <td className="px-6 py-4">
-                                                    <div>
-                                                        <div className="text-sm font-semibold text-gray-900">
-                                                            {task.title}
-                                                        </div>
-                                                        {task.description && (
-                                                            <div className="text-sm text-gray-500 mt-1 line-clamp-2">
-                                                                {task.description}
+                                                    <div className="space-y-3">
+                                                        {/* Task ID and Title Section */}
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="inline-block px-2 py-1 text-xs font-mono bg-gray-100 text-gray-600 rounded">
+                                                                            #{task._id?.substring(0, 8)}...
+                                                                        </span>
+                                                                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${TYPE_COLORS[task.type] || "bg-gray-100 text-gray-800"}`}>
+                                                                            {task.type}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-2">
+                                                                        <div className="text-sm font-semibold text-gray-900">
+                                                                            {task.title}
+                                                                        </div>
+                                                                        {task.description && (
+                                                                            <div className="text-sm text-gray-500 mt-1 line-clamp-2">
+                                                                                {task.description}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                {task.notes && (
+                                                                    <MessageSquare className="w-4 h-4 text-gray-400 flex-shrink-0" title="Has notes" />
+                                                                )}
                                                             </div>
-                                                        )}
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${TYPE_COLORS[task.type] || "bg-gray-100 text-gray-800"}`}>
-                                                                {task.type}
-                                                            </span>
-                                                            {task.notes && (
-                                                                <MessageSquare className="w-3 h-3 text-gray-400" title="Has notes" />
-                                                            )}
                                                         </div>
                                                     </div>
                                                 </td>
+
+                                                {/* Employee Information Column - Right Side of Task ID */}
                                                 <td className="px-6 py-4">
                                                     {employee ? (
-                                                        <div className="flex items-center space-x-3">
-                                                            <div className="flex-shrink-0">
-                                                                <Users className="w-8 h-8 text-gray-400" />
+                                                        <div className="space-y-3">
+                                                            {/* Employee Name and Email Section */}
+                                                            <div className="space-y-2">
+                                                                <div className="flex items-center space-x-3">
+                                                                    <div className="flex-shrink-0">
+                                                                        {employee.profilePicture ? (
+                                                                            <img
+                                                                                src={employee.profilePicture}
+                                                                                alt={employee.name}
+                                                                                className="w-10 h-10 rounded-full object-cover"
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                                                                <User className="w-5 h-5 text-purple-600" />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <div className="text-sm font-medium text-gray-900 truncate">
+                                                                            {employee.name}
+                                                                        </div>
+                                                                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                                                                            <Mail className="w-3 h-3 mr-1 flex-shrink-0" />
+                                                                            <span className="truncate">{employee.email}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <div>
-                                                                <div className="text-sm font-medium text-gray-900">
-                                                                    {employee.name}
+
+                                                            {/* Department and Position Section */}
+                                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                                <div className="flex items-center space-x-1">
+                                                                    <Building className="w-3 h-3 text-gray-400" />
+                                                                    <span className="text-gray-600 truncate">{employee.department || "N/A"}</span>
                                                                 </div>
-                                                                <div className="text-xs text-gray-500">
-                                                                    {employee.email}
-                                                                </div>
-                                                                <div className="text-xs text-gray-400">
-                                                                    {employee.department} • {employee.position}
+                                                                <div className="flex items-center space-x-1">
+                                                                    <Briefcase className="w-3 h-3 text-gray-400" />
+                                                                    <span className="text-gray-600 truncate">{employee.position || "N/A"}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <div className="text-sm text-gray-500 italic">Unassigned</div>
+                                                        <div className="text-center py-4">
+                                                            <Users className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                                            <div className="text-sm text-gray-500 italic">Unassigned</div>
+                                                        </div>
                                                     )}
                                                 </td>
+
+                                                {/* Status & Priority Column */}
                                                 <td className="px-6 py-4">
                                                     <div className="space-y-2">
                                                         <div>
@@ -1215,9 +1302,11 @@ const TaskAdmin = () => {
                                                         </div>
                                                     </div>
                                                 </td>
+
+                                                {/* Progress Column */}
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-3">
-                                                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                                                        <div className="w-24 bg-gray-200 rounded-full h-2">
                                                             <div
                                                                 className="bg-green-600 h-2 rounded-full transition-all duration-300"
                                                                 style={{ width: `${task.progress || 0}%` }}
@@ -1231,6 +1320,8 @@ const TaskAdmin = () => {
                                                         </div>
                                                     )}
                                                 </td>
+
+                                                {/* Dates Column */}
                                                 <td className="px-6 py-4 text-sm text-gray-500">
                                                     <div className="space-y-1">
                                                         <div className="flex items-center">
@@ -1241,6 +1332,8 @@ const TaskAdmin = () => {
                                                         <div>Updated: {formatDate(task.lastUpdated) || formatDate(task.updatedAt) || "N/A"}</div>
                                                     </div>
                                                 </td>
+
+                                                {/* Actions Column */}
                                                 <td className="px-6 py-4 text-sm font-medium">
                                                     <div className="relative">
                                                         <button
@@ -1290,11 +1383,11 @@ const TaskAdmin = () => {
                             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                             <h3 className="text-lg font-semibold text-gray-600 mb-2">No tasks found</h3>
                             <p className="text-gray-500">
-                                {filters.employee 
+                                {filters.employee
                                     ? `No tasks found for selected employee.`
                                     : filters.search || filters.status || filters.priority || filters.type
-                                    ? "No tasks match your filters. Try changing your filter criteria."
-                                    : "No tasks have been created yet."}
+                                        ? "No tasks match your filters. Try changing your filter criteria."
+                                        : "No tasks have been created yet."}
                             </p>
                             <button
                                 onClick={() => setShowAddTask(true)}
@@ -1323,5 +1416,4 @@ const TaskAdmin = () => {
         </>
     );
 };
-
 export default TaskAdmin;
