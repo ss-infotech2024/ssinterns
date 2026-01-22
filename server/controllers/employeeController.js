@@ -679,6 +679,7 @@ export const changePassword = async (req, res) => {
       });
     }
 
+    
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
