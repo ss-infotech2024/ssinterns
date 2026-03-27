@@ -57,7 +57,8 @@ app.use(express.json());
 // -------------------- CORS CONFIG --------------------
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://ssinterncrm.netlify.app"
+  "https://ssinterncrm.netlify.app",
+  "https://sscrm.skill2success.in"
 ];
 
 app.use((req, res, next) => {
