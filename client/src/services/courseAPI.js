@@ -1,4 +1,3 @@
-// src/services/courseAPI.js
 import API from "./api.js";
 
 export const courseAPI = {

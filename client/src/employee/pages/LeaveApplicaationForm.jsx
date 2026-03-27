@@ -1,4 +1,3 @@
-// src/pages/employee/LeaveApplicationForm.jsx
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {

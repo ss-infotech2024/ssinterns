@@ -1,5 +1,3 @@
-// src/admin/pages/ClientManagement.jsx
-
 import React, { useState, useEffect } from "react";
 
 // === ALL SVG ICONS ===

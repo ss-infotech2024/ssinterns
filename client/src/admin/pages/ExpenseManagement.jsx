@@ -1,4 +1,3 @@
-// src/pages/admin/AdminExpenseDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {

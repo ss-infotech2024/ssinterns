@@ -1,4 +1,3 @@
-// src/admin/pages/ProjectManagement.jsx
 import React, { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
