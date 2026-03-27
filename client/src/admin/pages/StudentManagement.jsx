@@ -123,7 +123,7 @@ const StudentManagement = () => {
     { id: 4, name: "Graphic Design", fee: 45000, duration: "4 months" },
   ];
 
-  const API_URL = "https://interncrm.onrender.com/api/students";
+  const API_URL = "https://ssinternsbackend.onrender.com/api/students";
 
   // Fetch all students
   const fetchStudents = async (query = "") => {

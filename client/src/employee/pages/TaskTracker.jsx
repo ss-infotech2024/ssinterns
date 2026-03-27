@@ -5,7 +5,7 @@ import { Plus, FileText, Check, Loader, Edit, Trash2, RefreshCw, AlertCircle, Fi
 import { toast, Toaster } from "react-hot-toast";
 
 const IST = "Asia/Kolkata";
-const API_URL = "https://interncrm.onrender.com/api";
+const API_URL = "https://ssinternsbackend.onrender.com/api";
 const PUBLIC_USER_ID = "666666666666666666666666"; // Fixed public user ID
 
 // Priority and Type options

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
-const API_URL = 'https://interncrm.onrender.com/api/lead';
+const API_URL = 'https://ssinternsbackend.onrender.com/api/lead';
 
 const LeadManagement = () => {
   const [leads, setLeads] = useState([]);

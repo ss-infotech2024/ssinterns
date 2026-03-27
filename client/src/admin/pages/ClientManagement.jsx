@@ -65,7 +65,7 @@ const ClientManagement = () => {
     );
   }
 
-  const API_BASE = "https://interncrm.onrender.com/api/clients";
+  const API_BASE = "https://ssinternsbackend.onrender.com/api/clients";
 
   const [clients, setClients] = useState([]);
   const [stats, setStats] = useState({ total: 0, active: 0, vip: 0, totalValue: 0, totalProjects: 0, avgProjects: 0 });

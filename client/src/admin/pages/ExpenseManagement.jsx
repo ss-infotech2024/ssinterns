@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
-const API_URL = 'https://interncrm.onrender.com/api/expenses';
+const API_URL = 'https://ssinternsbackend.onrender.com/api/expenses';
 
 export default function AdminExpenseDashboard() {
   const [expenses, setExpenses] = useState([]);

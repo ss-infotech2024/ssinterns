@@ -26,7 +26,7 @@ const courseAPI = {
   getAllCourses: async () => {
     try {
       console.log('Fetching courses from API...');
-      const response = await fetch('https://interncrm.onrender.com/api/courses', {
+      const response = await fetch('https://ssinternsbackend.onrender.com/api/courses', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ const courseAPI = {
   },
 
   updateCourse: async (courseId, courseData) => {
-    const response = await fetch(`https://interncrm.onrender.com/api/courses/${courseId}`, {
+    const response = await fetch(`https://ssinternsbackend.onrender.com/api/courses/${courseId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ const courseAPI = {
   },
 
   deleteCourse: async (courseId) => {
-    const response = await fetch(`https://interncrm.onrender.com/api/courses/${courseId}`, {
+    const response = await fetch(`https://ssinternsbackend.onrender.com/api/courses/${courseId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ const courseAPI = {
   },
 
   addStudent: async (courseId, studentData) => {
-    const response = await fetch(`https://interncrm.onrender.com/api/courses/${courseId}/students`, {
+    const response = await fetch(`https://ssinternsbackend.onrender.com/api/courses/${courseId}/students`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -105,7 +105,7 @@ const courseAPI = {
   },
 
   updateStudent: async (courseId, studentId, studentData) => {
-    const response = await fetch(`https://interncrm.onrender.com/api/courses/${courseId}/students/${studentId}`, {
+    const response = await fetch(`https://ssinternsbackend.onrender.com/api/courses/${courseId}/students/${studentId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -122,7 +122,7 @@ const courseAPI = {
   },
 
   deleteStudent: async (courseId, studentId) => {
-    const response = await fetch(`https://interncrm.onrender.com/api/courses/${courseId}/students/${studentId}`, {
+    const response = await fetch(`https://ssinternsbackend.onrender.com/api/courses/${courseId}/students/${studentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -138,7 +138,7 @@ const courseAPI = {
   },
 
   updateReminder: async (courseId, studentId, reminderMessage) => {
-    const response = await fetch(`https://interncrm.onrender.com/api/courses/${courseId}/students/${studentId}/reminder`, {
+    const response = await fetch(`https://ssinternsbackend.onrender.com/api/courses/${courseId}/students/${studentId}/reminder`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -300,7 +300,7 @@ const ErrorDisplay = ({ error, onRetry }) => (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
             <p><strong>Server Connection Issue:</strong></p>
             <p>• Check if backend server is running on port 5000</p>
-            <p>• Verify API endpoint: https://interncrm.onrender.com/api/courses</p>
+            <p>• Verify API endpoint: https://ssinternsbackend.onrender.com/api/courses</p>
             <p>• Check console for detailed error messages</p>
           </div>
         )}

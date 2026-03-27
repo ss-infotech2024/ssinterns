@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
-const API_URL = 'https://interncrm.onrender.com/api/lead';
+const API_URL = 'https://ssinternsbackend.onrender.com/api/lead';
 
 export default function AdminLeadIncentiveDashboard() {
   const [leads, setLeads] = useState([]);
@@ -50,7 +50,7 @@ export default function AdminLeadIncentiveDashboard() {
     try {
       const [leadsRes, empRes] = await Promise.all([
         fetch(`${API_URL}/all`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('https://interncrm.onrender.com/api/employee/all', { headers: { Authorization: `Bearer ${token}` } })
+        fetch('https://ssinternsbackend.onrender.com/api/employee/all', { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       if (leadsRes.ok) {

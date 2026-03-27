@@ -4,7 +4,7 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://interncrm.onrender.com/api",
+  baseURL: "https://ssinternsbackend.onrender.com/api",
 });
 
 // Add token to every request

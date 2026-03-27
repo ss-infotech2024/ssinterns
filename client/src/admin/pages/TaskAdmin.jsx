@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
-const API_URL = "https://interncrm.onrender.com/api";
+const API_URL = "https://ssinternsbackend.onrender.com/api";
 
 const PRIORITY_COLORS = {
     low: "bg-blue-100 text-blue-800 border border-blue-200",

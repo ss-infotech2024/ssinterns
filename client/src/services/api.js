@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-    baseURL: "https://interncrm.onrender.com",
+    baseURL: "https://ssinternsbackend.onrender.com",
 });
 
 // Add token to every request automatically
