@@ -1,4 +1,3 @@
-// src/controllers/leadController.js
 import Lead from "../models/leadModel.js";
 import Employee from "../models/employeeModel.js";
 

@@ -4,7 +4,7 @@ import axios from "axios";
 
 // API Configuration
 const API = axios.create({
-  baseURL: "https://ssinternsbackend.onrender.com/api",
+  baseURL: "https://ssinternsbackend-ltfn.onrender.com/api",
 });
 
 API.interceptors.request.use((config) => {

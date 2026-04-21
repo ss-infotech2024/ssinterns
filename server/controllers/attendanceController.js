@@ -1,4 +1,3 @@
-// controllers/attendanceController.js
 import Attendance from "../models/attendenceModel.js";
 import Employee from "../models/employeeModel.js";
 import { startOfDay, endOfDay, format } from "date-fns";

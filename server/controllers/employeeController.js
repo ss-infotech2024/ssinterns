@@ -1,4 +1,3 @@
-// src/controllers/employeeController.js
 import Employee from "../models/employeeModel.js";
 import Attendance from "../models/attendenceModel.js";
 import Task from "../models/taskModel.js";

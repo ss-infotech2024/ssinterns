@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-    baseURL: "https://ssinternsbackend.onrender.com",
+    baseURL: "https://ssinternsbackend-ltfn.onrender.com",
 });
 
 // Add token to every request automatically

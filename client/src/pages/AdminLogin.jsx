@@ -21,8 +21,8 @@ const AdminLogin = () => {
     }
 
     try {
-      // Vite proxy → /api/admin/login → https://ssinternsbackend.onrender.com/api/admin/login
-      const res = await fetch("https://ssinternsbackend.onrender.com/api/admin/login", {
+      // Vite proxy → /api/admin/login → https://ssinternsbackend-ltfn.onrender.com/api/admin/login
+      const res = await fetch("https://ssinternsbackend-ltfn.onrender.com/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

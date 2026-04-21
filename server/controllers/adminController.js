@@ -1,4 +1,3 @@
-// src/controllers/adminController.js
 import Admin from "../models/adminModel.js";
 import { generateToken } from "../utils/generateToken.js";
 

@@ -26,7 +26,7 @@ const EmployeeAttendance = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("https://ssinternsbackend.onrender.com/api/attendance/history", {
+      const res = await fetch("https://ssinternsbackend-ltfn.onrender.com/api/attendance/history", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await res.json();
@@ -66,7 +66,7 @@ const EmployeeAttendance = () => {
 
       const { latitude, longitude } = position.coords;
 
-      const res = await fetch("https://ssinternsbackend.onrender.com/api/attendance/clock-in", {
+      const res = await fetch("https://ssinternsbackend-ltfn.onrender.com/api/attendance/clock-in", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +95,7 @@ const EmployeeAttendance = () => {
   const handleClockOut = async () => {
     setClocking("out");
     try {
-      const res = await fetch("https://ssinternsbackend.onrender.com/api/attendance/clock-out", {
+      const res = await fetch("https://ssinternsbackend-ltfn.onrender.com/api/attendance/clock-out", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
