@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 // API Configuration
-const API_BASE_URL = "https://ssinternsbackend-ltfn.onrender.com/api";
+const API_BASE_URL = "https://ssinternsbacknedv2.onrender.com/api";
 
 // SVG Icons Components (keep your existing icons as is)
 const DashboardIcon = ({ className = "w-5 h-5" }) => (

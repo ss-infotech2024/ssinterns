@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://ssinternsbackend-ltfn.onrender.com", // your backend
+        target: "https://ssinternsbacknedv2.onrender.com", // your backend
         changeOrigin: true,
         secure: false,
       },
