@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/sgilbcav/public_html
+    - /bin/cp -R client/dist/* $DEPLOYPATH
+    - /bin/cp client/dist/.htaccess $DEPLOYPATH
