@@ -57,7 +57,8 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://ssinterncrm.netlify.app",
-  "https://sscrm.skill2success.in"
+  "https://sscrm.skill2success.in",
+  "https://internscrm.ssinfotech.co.in"
 ];
 
 app.use((req, res, next) => {
