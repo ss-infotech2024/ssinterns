@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
+import * as XLSX from "xlsx";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 const API = axios.create({
@@ -46,6 +47,9 @@ const Icon = ({ d, cls = "w-5 h-5" }) => (
     ))}
   </svg>
 );
+
+const IUpload   = () => <Icon d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />;
+const IDownload = () => <Icon d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />;
 const IUser      = () => <Icon d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />;
 const IDept      = () => <Icon d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />;
 const ISalary    = () => <Icon d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />;
@@ -136,6 +140,11 @@ const EmployeeManagement = () => {
   const [editOpen,      setEditOpen]      = useState(false);
   const [credsOpen,     setCredsOpen]     = useState(false);
   const [newCreds,      setNewCreds]      = useState(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkFile, setBulkFile] = useState(null);
+  const [parsedEmployees, setParsedEmployees] = useState([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
   const abortRef = useRef(null);
 
   const BLANK_FORM = {
@@ -322,6 +331,173 @@ const EmployeeManagement = () => {
     }
   };
 
+  // ── Bulk Upload ────────────────────────────────────────────────────────────
+    const downloadTemplate = () => {
+    const templateData = [
+      {
+        "Full Name": "John Doe",
+        "Email": "john.doe@example.com",
+        "Phone": "9876543210",
+        "Position": "Software Engineer",
+        "Salary": 45000,
+        "Joining Date": "2025-01-15",          // YYYY-MM-DD format
+        "Login ID": "john.doe",
+        "Password": "password123",
+        "Department": "Development",           // Sales / Marketing / Development / HR / Finance / Operations
+        "Type": "Employee"                     // Employee / Intern
+      }
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Employees");
+
+    // Column widths
+    ws["!cols"] = [
+      { wch: 20 }, // Full Name
+      { wch: 28 }, // Email
+      { wch: 14 }, // Phone
+      { wch: 20 }, // Position
+      { wch: 12 }, // Salary
+      { wch: 14 }, // Joining Date
+      { wch: 14 }, // Login ID
+      { wch: 14 }, // Password
+      { wch: 14 }, // Department
+      { wch: 12 }, // Type
+    ];
+
+    XLSX.writeFile(wb, "Employee_Bulk_Upload_Template.xlsx");
+  };
+
+    const handleBulkFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setBulkFile(file);
+    setBulkResult(null);
+    setParsedEmployees([]);
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        if (!json.length) {
+          toast.error("Excel file is empty");
+          return;
+        }
+
+        // Department name → id map
+        const deptMap = {};
+        DEPARTMENTS.forEach((d) => {
+          deptMap[d.name.toLowerCase()] = d.id;
+        });
+
+        const mapped = json.map((row, i) => {
+          // Support both clean headers and old headers
+          const name = String(row["Full Name"] || row.name || "").trim();
+          const email = String(row["Email"] || row.email || "").trim().toLowerCase();
+          const phone = String(row["Phone"] || row.phone || "").trim() || "0000000000";
+          const position = String(row["Position"] || row.position || "").trim();
+          const salary = Number(row["Salary"] || row.salary) || 0;
+          const joiningDate = String(row["Joining Date"] || row.joiningDate || "").trim();
+          const loginId = String(row["Login ID"] || row.loginId || "").trim();
+          const password = String(row["Password"] || row.password || "").trim();
+          const type = String(row["Type"] || row.employeeType || "Employee").trim() || "Employee";
+
+          // Department handling
+          const rawDept = String(row["Department"] || row.department || "").trim().toLowerCase();
+          let departmentId = null;
+
+          if (rawDept && !isNaN(rawDept)) {
+            departmentId = Number(rawDept);
+          } else {
+            departmentId = deptMap[rawDept] || null;
+          }
+
+          return {
+            name,
+            email,
+            phone,
+            department: departmentId,
+            position,
+            salary,
+            joiningDate,
+            loginId,
+            password,
+            status: "Active",
+            employeeType: type === "Intern" ? "Intern" : "Employee",
+            _row: i + 2
+          };
+        });
+
+        setParsedEmployees(mapped);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to read Excel file");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+    const handleBulkUpload = async () => {
+      if (!parsedEmployees.length) {
+        toast.error("No employees found in the file");
+        return;
+      }
+
+      const invalid = parsedEmployees.filter(
+        (e) => !e.name || !e.email || !e.department || !e.position || !e.salary || !e.joiningDate || !e.loginId || !e.password
+      );
+
+      if (invalid.length) {
+        toast.error(`${invalid.length} rows have missing required fields`);
+        return;
+      }
+
+      setBulkLoading(true);
+      setBulkResult(null);
+
+      try {
+        const payload = parsedEmployees.map(({ _row, ...rest }) => rest);
+        const res = await API.post("/employee/create/employee/batch", payload);
+
+        const data = res.data;
+        setBulkResult({
+          success: true,
+          message: data.message || "Bulk upload successful",
+          summary: data.summary || {
+            total: payload.length,
+            success: data.count || 0,
+            failed: payload.length - (data.count || 0),
+            errors: data.summary?.errors || []
+          }
+        });
+
+        toast.success(data.message || "Employees added successfully");
+        fetchEmployees();
+        setBulkFile(null);
+        setParsedEmployees([]);
+      } catch (err) {
+        const msg = err.response?.data?.message || "Bulk upload failed";
+        const errors = err.response?.data?.errors || err.response?.data?.summary?.errors || [];
+        setBulkResult({ success: false, message: msg, errors });
+        toast.error(msg);
+      } finally {
+        setBulkLoading(false);
+      }
+    };
+
+    const closeBulkModal = () => {
+      setBulkOpen(false);
+      setBulkFile(null);
+      setParsedEmployees([]);
+      setBulkResult(null);
+    };
+
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
@@ -339,22 +515,33 @@ const EmployeeManagement = () => {
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Employee Management</h1>
               <p className="text-slate-500 text-sm mt-0.5">Manage your team — {merged.length} members total</p>
             </div>
-            <div className="flex items-center gap-2">
-              {enriching && (
-                <span className="text-xs text-slate-400 flex items-center gap-1.5">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
-                  Loading performance data…
-                </span>
-              )}
-              <button onClick={fetchEmployees} className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition shadow-sm" title="Refresh">
-                <IRefresh />
-              </button>
-              <button
-                onClick={() => setAddOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition shadow-sm"
-              >
-                <span className="text-lg leading-none">+</span> Add Employee
-              </button>
+            
+              <div className="flex items-center gap-2">
+                {enriching && (
+                  <span className="text-xs text-slate-400 flex items-center gap-1.5">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
+                    Loading performance data…
+                  </span>
+                )}
+                <button onClick={fetchEmployees} className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition shadow-sm" title="Refresh">
+                  <IRefresh />
+                </button>
+
+                {/* ← Bulk Add Button */}
+                <button
+                  onClick={() => setBulkOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-medium hover:bg-violet-700 transition shadow-sm"
+                >
+                  <IUpload /> Bulk Add
+                </button>
+
+                <button
+                  onClick={() => setAddOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition shadow-sm"
+                >
+                  <span className="text-lg leading-none">+</span> Add Employee
+                </button>
+                
             </div>
           </div>
 
@@ -666,6 +853,146 @@ const EmployeeManagement = () => {
           </div>
         </Modal>
       )}
+      {/* ══ Bulk Add Modal ═══════════════════════════════════════════════════════ */}
+        {bulkOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                <h3 className="text-lg font-bold text-slate-800">Bulk Add Employees</h3>
+                <button onClick={closeBulkModal} className="text-slate-400 hover:text-slate-700 transition">
+                  <IClose />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Step 1 */}
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
+                  <h4 className="font-semibold text-blue-800 text-sm mb-1">Step 1 — Download Template</h4>
+                  <p className="text-xs text-blue-600 mb-3">
+                    Download the Excel template, fill the employee details, then upload it below.
+                  </p>
+                  <button
+                    onClick={downloadTemplate}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+                  >
+                    <IDownload /> Download Template
+                  </button>
+                </div>
+
+                {/* Step 2 */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                  <h4 className="font-semibold text-slate-800 text-sm mb-1">Step 2 — Upload Filled Excel</h4>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleBulkFileChange}
+                    className="block w-full text-sm text-slate-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-xl file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-violet-50 file:text-violet-700
+                      hover:file:bg-violet-100 cursor-pointer mt-2"
+                  />
+                  {bulkFile && (
+                    <p className="mt-2 text-xs text-emerald-600 font-medium">
+                      {bulkFile.name} — {parsedEmployees.length} rows found
+                    </p>
+                  )}
+                </div>
+
+                {/* Preview */}
+                {parsedEmployees.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-slate-800 text-sm mb-2">
+                      Preview ({parsedEmployees.length} employees)
+                    </h4>
+                    <div className="overflow-x-auto max-h-56 border border-slate-200 rounded-xl">
+                      <table className="w-full text-sm">
+                        <thead className="bg-slate-50 sticky top-0">
+                          <tr>
+                            {["Name", "Email", "Department", "Position", "Login ID"].map((h) => (
+                              <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-slate-500">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {parsedEmployees.slice(0, 8).map((emp, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50">
+                              <td className="px-3 py-2">{emp.name || <span className="text-red-500">Missing</span>}</td>
+                              <td className="px-3 py-2">{emp.email || <span className="text-red-500">Missing</span>}</td>
+                              <td className="px-3 py-2">
+                                {deptName(emp.department) === "Unknown"
+                                  ? <span className="text-red-500">Invalid</span>
+                                  : deptName(emp.department)}
+                              </td>
+                              <td className="px-3 py-2">{emp.position || <span className="text-red-500">Missing</span>}</td>
+                              <td className="px-3 py-2">{emp.loginId || <span className="text-red-500">Missing</span>}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {parsedEmployees.length > 8 && (
+                        <p className="text-center text-xs text-slate-400 py-2">
+                          ...and {parsedEmployees.length - 8} more
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Result */}
+                {bulkResult && (
+                  <div className={`rounded-xl p-4 text-sm ${
+                    bulkResult.success
+                      ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+                      : "bg-red-50 border border-red-200 text-red-800"
+                  }`}>
+                    <p className="font-semibold">{bulkResult.message}</p>
+                    {bulkResult.summary && (
+                      <p className="mt-1 text-xs opacity-80">
+                        Total: {bulkResult.summary.total} · Success: {bulkResult.summary.success} · Failed: {bulkResult.summary.failed}
+                      </p>
+                    )}
+                    {bulkResult.errors?.length > 0 && (
+                      <ul className="mt-2 text-xs list-disc list-inside max-h-28 overflow-y-auto space-y-0.5">
+                        {bulkResult.errors.slice(0, 8).map((err, i) => (
+                          <li key={i}>{err}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                  <button
+                    onClick={closeBulkModal}
+                    className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 transition"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={handleBulkUpload}
+                    disabled={!parsedEmployees.length || bulkLoading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-medium hover:bg-violet-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {bulkLoading ? (
+                      <>
+                        <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <IUpload />
+                        Upload {parsedEmployees.length > 0 ? `${parsedEmployees.length} Employees` : ""}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
     </>
   );
 };

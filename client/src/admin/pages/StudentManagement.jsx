@@ -1,30 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 
-// Icons
+// === SVG ICONS ===
 const UserIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
   </svg>
 );
 
-const BookIcon = ({ className = "w-5 h-5" }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-  </svg>
-);
-
-const CurrencyIcon = ({ className = "w-5 h-5" }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-  </svg>
-);
-
-const FileIcon = ({ className = "w-5 h-5" }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
+const LiveStatusIcon = ({ isActive, className = "w-4 h-4" }) => (
+  <div className={`relative ${className}`}>
+    <div className={`absolute inset-0 rounded-full ${isActive ? 'bg-green-400' : 'bg-red-400'} opacity-30`}></div>
+    {isActive && <div className="absolute inset-0 rounded-full bg-green-400 animate-ping"></div>}
+    <div className={`relative w-full h-full rounded-full ${isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+  </div>
 );
 
 const SearchIcon = ({ className = "w-5 h-5" }) => (
@@ -46,15 +35,9 @@ const EditIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-const TrashIcon = ({ className = "w-5 h-5" }) => (
+const DeleteIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-  </svg>
-);
-
-const PlusIcon = ({ className = "w-5 h-5" }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
   </svg>
 );
 
@@ -66,1202 +49,1181 @@ const CloseIcon = ({ className = "w-6 h-6" }) => (
 
 const UploadIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
   </svg>
 );
 
 const DownloadIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
   </svg>
 );
 
-const StudentManagement = () => {
-  const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+const EmployeeManagement = () => {
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [statusSort, setStatusSort] = useState("all");
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+  const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [success, setSuccess] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState(null);
-  const [importData, setImportData] = useState([]);
-  const [importPreview, setImportPreview] = useState([]);
-  const [importStep, setImportStep] = useState(1);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef(null);
+  const [newEmployeeCredentials, setNewEmployeeCredentials] = useState(null);
 
-  const [newStudent, setNewStudent] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    selectedCourse: "",
-    totalFees: "",
-    paidFees: ""
-  });
+  // Bulk related states
+  const [bulkFile, setBulkFile] = useState(null);
+  const [parsedEmployees, setParsedEmployees] = useState([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
 
-  const [editStudent, setEditStudent] = useState({
-    id: "",
-    name: "",
-    email: "",
-    phone: "",
-    selectedCourse: "",
-    totalFees: "",
-    paidFees: "",
-    status: "active"
-  });
+  const token = localStorage.getItem("adminToken");
+  const API_URL = "https://ssinternsbacknedv2.onrender.com/api";
 
-  // Static courses
-  const courses = [
-    { id: 1, name: "Web Development", fee: 50000, duration: "3 months" },
-    { id: 2, name: "Data Science", fee: 75000, duration: "6 months" },
-    { id: 3, name: "Digital Marketing", fee: 35000, duration: "2 months" },
-    { id: 4, name: "Graphic Design", fee: 45000, duration: "4 months" },
+  const departments = [
+    { id: 1, name: "Sales" },
+    { id: 2, name: "Marketing" },
+    { id: 3, name: "Development" },
+    { id: 4, name: "HR" },
+    { id: 5, name: "Finance" },
+    { id: 6, name: "Operations" }
   ];
 
-  const API_URL = "https://ssinternsbacknedv2.onrender.com/api/students";
+  const statusSortOptions = [
+    { value: "all", label: "All Status" },
+    { value: "online", label: "Online Only" },
+    { value: "offline", label: "Offline Only" },
+    { value: "online-first", label: "Online First" },
+    { value: "offline-first", label: "Offline First" }
+  ];
 
-  // Fetch all students
-  const fetchStudents = async (query = "") => {
+  // === LIVE STATUS CHECK ===
+  const checkLiveStatus = async (employeeId) => {
+    if (!employeeId) return false;
     try {
-      setLoading(true);
-      setError("");
-      const url = query ? `${API_URL}/search?q=${encodeURIComponent(query)}` : API_URL;
-      const res = await fetch(url);
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch students: ${res.status}`);
+      const res = await fetch(`${API_URL}/status/${employeeId}/today`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.isActive === true || data.isClockedIn === true;
       }
-
-      const json = await res.json();
-
-      if (json.success) {
-        setStudents(json.data || []);
-      } else {
-        throw new Error(json.message || "Failed to fetch students");
+    } catch (err) { }
+    try {
+      const res = await fetch(`${API_URL}/attendance/${employeeId}/today`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.isClockedIn === true || (data.attendanceRecord?.clockIn && !data.attendanceRecord?.clockOut);
       }
+    } catch (err) { }
+    return false;
+  };
+
+  const fetchAllLiveStatus = async (list) => {
+    const results = await Promise.all(
+      list.map(emp => checkLiveStatus(emp._id).then(status => ({ id: emp._id, isOnline: status })))
+    );
+    return Object.fromEntries(results.map(r => [r.id, r.isOnline]));
+  };
+
+  // === FETCH EMPLOYEES WITH LIVE STATUS ===
+  const fetchEmployees = async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/employee/get/employee`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch employees");
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : data.employees || data.data || [];
+
+      const statusMap = await fetchAllLiveStatus(list);
+      const final = list.map(emp => ({
+        ...emp,
+        isOnline: statusMap[emp._id] || false
+      }));
+
+      setEmployees(final);
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err.message);
-      loadDemoData();
+      console.error("Fetch employees error:", err);
+      alert("Failed to load employees");
     } finally {
       setLoading(false);
     }
   };
 
-  // Demo data for when backend is not available
-  const loadDemoData = () => {
-    const demoStudents = [
-      {
-        _id: "1",
-        name: "Priya Sharma",
-        email: "priya@edu.com",
-        phone: "+919876543210",
-        selectedCourse: "1",
-        courseName: "Web Development",
-        totalFees: 50000,
-        paidFees: 20000,
-        pendingFees: 30000,
-        enrollmentDate: "2024-01-15",
-        status: "active"
-      },
-      {
-        _id: "2",
-        name: "Rahul Kumar",
-        email: "rahul@edu.com",
-        phone: "+919876543211",
-        selectedCourse: "2",
-        courseName: "Data Science",
-        totalFees: 75000,
-        paidFees: 50000,
-        pendingFees: 25000,
-        enrollmentDate: "2024-02-01",
-        status: "active"
-      }
-    ];
-    setStudents(demoStudents);
-  };
-
   useEffect(() => {
-    fetchStudents();
-  }, []);
+    fetchEmployees();
+  }, [token]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchTerm.trim() === "") {
-        fetchStudents();
-      } else {
-        fetchStudents(searchTerm);
-      }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  // === MODAL STATES ===
+  const [newEmployee, setNewEmployee] = useState({
+    name: "", email: "", phone: "", department: "", position: "", joiningDate: "",
+    loginId: "", password: "", salary: ""
+  });
 
-  // Success message timeout
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(""), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
+  const [resetPasswordData, setResetPasswordData] = useState({
+    employeeId: "", employeeName: "", newPassword: "", confirmPassword: ""
+  });
 
-  const getCourseName = (courseId) => {
-    const course = courses.find(c => c.id === parseInt(courseId));
-    return course ? course.name : "Unknown Course";
-  };
+  // === HANDLERS ===
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    const required = ["name", "email", "department", "position", "joiningDate", "loginId", "password", "salary"];
+    if (required.some(f => !newEmployee[f])) return alert("Please fill all required fields");
+    if (newEmployee.password.length < 6) return alert("Password must be at least 6 characters");
 
-  const getCourseFee = (courseId) => {
-    const course = courses.find(c => c.id === parseInt(courseId));
-    return course ? course.fee : 0;
-  };
-
-  const totalPendingFees = students.reduce((sum, student) => sum + (student.pendingFees || 0), 0);
-
-  // EXCEL IMPORT FUNCTIONS
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-      // Convert to student format
-      const headers = jsonData[0];
-      const rows = jsonData.slice(1);
-
-      const processedData = rows.map((row, index) => {
-        const student = {
-          _id: `import-${Date.now()}-${index}`,
-          name: row[headers.indexOf("Name")] || row[0] || "",
-          email: row[headers.indexOf("Email")] || row[1] || "",
-          phone: row[headers.indexOf("Phone")] || row[2] || "",
-          selectedCourse: findCourseId(row[headers.indexOf("Course")] || row[3] || ""),
-          courseName: row[headers.indexOf("Course")] || row[3] || "Unknown Course",
-          totalFees: parseInt(row[headers.indexOf("Total Fees")] || row[4] || 0),
-          paidFees: parseInt(row[headers.indexOf("Paid Fees")] || row[5] || 0),
-          pendingFees: parseInt(row[headers.indexOf("Total Fees")] || row[4] || 0) - parseInt(row[headers.indexOf("Paid Fees")] || row[5] || 0),
-          enrollmentDate: row[headers.indexOf("Enrollment Date")] || row[6] || new Date().toISOString().split('T')[0],
-          status: "active",
-          isNew: true // Flag for preview
-        };
-        return student;
-      }).filter(student => student.name); // Remove empty rows
-
-      setImportData(processedData);
-      setImportPreview(processedData.slice(0, 5)); // Show first 5 for preview
-      setImportStep(2);
-    };
-
-    reader.readAsArrayBuffer(file);
-  };
-
-  const findCourseId = (courseName) => {
-    const course = courses.find(c => c.name.toLowerCase() === courseName.toLowerCase());
-    return course ? course.id.toString() : "1"; // Default to Web Development
-  };
-
-  const handleImportConfirm = async () => {
     try {
-      setUploadProgress(0);
-      setImportStep(3);
-
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
+      const res = await fetch(`${API_URL}/employee/create/employee`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          ...newEmployee,
+          department: +newEmployee.department,
+          salary: +newEmployee.salary
+        })
+      });
+      if (res.ok) {
+        setNewEmployeeCredentials({
+          name: newEmployee.name,
+          email: newEmployee.email,
+          loginId: newEmployee.loginId,
+          password: newEmployee.password
         });
-      }, 100);
-
-      // In a real application, you would send to backend
-      // For now, we'll add directly to state
-      setTimeout(() => {
-        const updatedStudents = [...students, ...importData.map(student => ({
-          ...student,
-          _id: `student-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        }))];
-
-        setStudents(updatedStudents);
-        setUploadProgress(100);
-
-        setTimeout(() => {
-          setShowImportModal(false);
-          setImportStep(1);
-          setImportData([]);
-          setImportPreview([]);
-          setUploadProgress(0);
-          setSuccess(`Successfully imported ${importData.length} students!`);
-        }, 1000);
-
-        clearInterval(progressInterval);
-      }, 2000);
-
-    } catch (error) {
-      console.error("Import error:", error);
-      setError("Failed to import students: " + error.message);
-      setImportStep(1);
+        setIsCredentialsModalOpen(true);
+        setIsAddModalOpen(false);
+        fetchEmployees();
+        setSuccess("Employee added successfully!");
+        setNewEmployee({
+          name: "", email: "", phone: "", department: "", position: "", joiningDate: "",
+          loginId: "", password: "", salary: ""
+        });
+      } else {
+        const errData = await res.json();
+        alert(errData.message || "Failed to create employee");
+      }
+    } catch (err) {
+      console.error("Add employee error:", err);
+      alert("Error creating employee");
     }
   };
 
-  const handleExportExcel = () => {
-    const exportData = students.map(student => ({
-      "Name": student.name,
-      "Email": student.email,
-      "Phone": student.phone,
-      "Course": student.courseName || getCourseName(student.selectedCourse),
-      "Total Fees": student.totalFees,
-      "Paid Fees": student.paidFees,
-      "Pending Fees": student.pendingFees || student.totalFees - student.paidFees,
-      "Enrollment Date": student.enrollmentDate,
-      "Status": student.status
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-
-    // Auto-size columns
-    const maxWidth = exportData.reduce((w, r) => Math.max(w, r.Name.length), 10);
-    worksheet['!cols'] = [{ wch: maxWidth }];
-
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-
-    saveAs(blob, `students-${new Date().toISOString().split('T')[0]}.xlsx`);
-    setSuccess(`Exported ${students.length} students to Excel!`);
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_URL}/employee/update/${selectedEmployee._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...selectedEmployee, department: +selectedEmployee.department })
+      });
+      if (res.ok) {
+        fetchEmployees();
+        setIsEditModalOpen(false);
+        setSuccess("Employee updated successfully!");
+      } else {
+        alert("Failed to update employee");
+      }
+    } catch (err) {
+      console.error("Edit employee error:", err);
+      alert("Error updating employee");
+    }
   };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) return alert("Passwords don't match");
+    if (resetPasswordData.newPassword.length < 6) return alert("Password must be at least 6 characters");
+
+    try {
+      const res = await fetch(`${API_URL}/employee/${resetPasswordData.employeeId}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ newPassword: resetPasswordData.newPassword })
+      });
+      if (res.ok) {
+        setNewEmployeeCredentials({
+          name: resetPasswordData.employeeName,
+          loginId: employees.find(e => e._id === resetPasswordData.employeeId)?.loginId,
+          password: resetPasswordData.newPassword
+        });
+        setIsResetPasswordModalOpen(false);
+        setIsCredentialsModalOpen(true);
+        setSuccess("Password reset successfully!");
+      } else {
+        alert("Failed to reset password");
+      }
+    } catch (err) {
+      console.error("Reset password error:", err);
+      alert("Error resetting password");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this employee?")) return;
+    try {
+      const res = await fetch(`${API_URL}/employee/delete/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchEmployees();
+        setSuccess("Employee deleted successfully!");
+      } else {
+        alert("Failed to delete employee");
+      }
+    } catch (err) {
+      console.error("Delete employee error:", err);
+      alert("Error deleting employee");
+    }
+  };
+
+  const copyCredentialsToClipboard = () => {
+    const text = `Name: ${newEmployeeCredentials.name}\nEmail: ${newEmployeeCredentials.email || ""}\nLogin ID: ${newEmployeeCredentials.loginId}\nPassword: ${newEmployeeCredentials.password}`;
+    navigator.clipboard.writeText(text);
+    alert("Credentials copied to clipboard!");
+  };
+
+  // ========== BULK UPLOAD FUNCTIONS ==========
 
   const downloadTemplate = () => {
     const templateData = [
       {
-        "Name": "John Doe",
-        "Email": "john@example.com",
-        "Phone": "+1234567890",
-        "Course": "Web Development",
-        "Total Fees": 50000,
-        "Paid Fees": 20000,
-        "Enrollment Date": "2024-01-15"
+        name: "John Doe",
+        email: "john.doe@example.com",
+        phone: "9876543210",
+        department: "Development",          // Use department NAME
+        position: "Software Engineer",
+        salary: 45000,
+        joiningDate: "2025-01-15",          // YYYY-MM-DD format
+        loginId: "john.doe",
+        password: "password123",
+        status: "Active",                   // Optional: Active / Inactive
+        employeeType: "Employee"            // Optional: Employee / Intern
       }
     ];
 
-    const worksheet = XLSX.utils.json_to_sheet(templateData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Employees");
 
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    // Set column widths
+    ws["!cols"] = [
+      { wch: 20 }, { wch: 28 }, { wch: 14 }, { wch: 14 },
+      { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 14 },
+      { wch: 14 }, { wch: 12 }, { wch: 14 }
+    ];
 
-    saveAs(blob, "student-import-template.xlsx");
-    setSuccess("Template downloaded successfully!");
+    XLSX.writeFile(wb, "Employee_Bulk_Upload_Template.xlsx");
   };
 
-  // Add Student
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    const studentData = {
-      ...newStudent,
-      courseName: getCourseName(newStudent.selectedCourse),
-      totalFees: parseInt(newStudent.totalFees),
-      paidFees: parseInt(newStudent.paidFees || 0)
-    };
+    setBulkFile(file);
+    setBulkResult(null);
+    setParsedEmployees([]);
 
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(studentData),
-      });
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-      const result = await response.json();
+        if (jsonData.length === 0) {
+          alert("Excel file is empty");
+          return;
+        }
 
-      if (response.ok && result.success) {
-        setStudents(prev => [...prev, result.data]);
-        setShowAddModal(false);
-        setNewStudent({
-          name: "",
-          email: "",
-          phone: "",
-          selectedCourse: "",
-          totalFees: "",
-          paidFees: ""
+        // Map department name → id
+        const deptMap = {};
+        departments.forEach(d => {
+          deptMap[d.name.toLowerCase()] = d.id;
         });
-        setSuccess('Student added successfully!');
-      } else {
-        throw new Error(result.message || 'Failed to add student');
-      }
-    } catch (error) {
-      console.error('Add student error:', error);
-      setError(`Error: ${error.message}`);
-    }
-  };
 
-  // Edit Student
-  const handleEditStudent = async (e) => {
-    e.preventDefault();
+        const mapped = jsonData.map((row, index) => {
+          const deptValue = String(row.department || "").trim().toLowerCase();
+          let departmentId = null;
 
-    const studentData = {
-      ...editStudent,
-      courseName: getCourseName(editStudent.selectedCourse),
-      totalFees: parseInt(editStudent.totalFees),
-      paidFees: parseInt(editStudent.paidFees || 0)
-    };
+          if (!isNaN(deptValue) && deptValue !== "") {
+            departmentId = Number(deptValue);
+          } else {
+            departmentId = deptMap[deptValue] || null;
+          }
 
-    try {
-      const response = await fetch(`${API_URL}/${editStudent.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(studentData),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setStudents(prev =>
-          prev.map(student =>
-            student._id === editStudent.id ? result.data : student
-          )
-        );
-        setShowEditModal(false);
-        setEditStudent({
-          id: "",
-          name: "",
-          email: "",
-          phone: "",
-          selectedCourse: "",
-          totalFees: "",
-          paidFees: "",
-          status: "active"
+          return {
+            name: String(row.name || "").trim(),
+            email: String(row.email || "").trim().toLowerCase(),
+            phone: String(row.phone || "").trim() || "0000000000",
+            department: departmentId,
+            position: String(row.position || "").trim(),
+            salary: Number(row.salary) || 0,
+            joiningDate: String(row.joiningDate || "").trim(),
+            loginId: String(row.loginId || "").trim(),
+            password: String(row.password || "").trim(),
+            status: String(row.status || "Active").trim() || "Active",
+            employeeType: String(row.employeeType || "Employee").trim() || "Employee",
+            _row: index + 2 // Excel row number (for error display)
+          };
         });
-        setSuccess('Student updated successfully!');
-      } else {
-        throw new Error(result.message || 'Failed to update student');
+
+        setParsedEmployees(mapped);
+      } catch (err) {
+        console.error("Excel parse error:", err);
+        alert("Failed to read Excel file. Please check the format.");
       }
-    } catch (error) {
-      console.error('Update student error:', error);
-      setError(`Error: ${error.message}`);
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleBulkUpload = async () => {
+    if (parsedEmployees.length === 0) {
+      return alert("No employees to upload. Please select a valid Excel file.");
     }
-  };
 
-  // Delete Student
-  const handleDeleteStudent = async () => {
-    try {
-      const response = await fetch(`${API_URL}/${studentToDelete._id}`, {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setStudents(prev => prev.filter(student => student._id !== studentToDelete._id));
-        setShowDeleteModal(false);
-        setStudentToDelete(null);
-        setSuccess('Student deleted successfully!');
-      } else {
-        throw new Error(result.message || 'Failed to delete student');
-      }
-    } catch (error) {
-      console.error('Delete student error:', error);
-      setError(`Error: ${error.message}`);
-    }
-  };
-
-  const openEditModal = (student) => {
-    setEditStudent({
-      id: student._id,
-      name: student.name,
-      email: student.email,
-      phone: student.phone,
-      selectedCourse: student.selectedCourse,
-      totalFees: student.totalFees.toString(),
-      paidFees: student.paidFees.toString(),
-      status: student.status
-    });
-    setShowEditModal(true);
-  };
-
-  const openDeleteModal = (student) => {
-    setStudentToDelete(student);
-    setShowDeleteModal(true);
-  };
-
-  const handleInputChange = (e, isEdit = false) => {
-    const { name, value } = e.target;
-
-    if (isEdit) {
-      setEditStudent(prev => ({
-        ...prev,
-        [name]: value
-      }));
-
-      if (name === 'selectedCourse' && value) {
-        const courseFee = getCourseFee(value);
-        setEditStudent(prev => ({
-          ...prev,
-          totalFees: courseFee.toString()
-        }));
-      }
-    } else {
-      setNewStudent(prev => ({
-        ...prev,
-        [name]: value
-      }));
-
-      if (name === 'selectedCourse' && value) {
-        const courseFee = getCourseFee(value);
-        setNewStudent(prev => ({
-          ...prev,
-          totalFees: courseFee.toString()
-        }));
-      }
-    }
-  };
-
-  const resetImportProcess = () => {
-    setImportStep(1);
-    setImportData([]);
-    setImportPreview([]);
-    setUploadProgress(0);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  if (loading && students.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-2xl font-semibold text-gray-700">Loading Students...</div>
-      </div>
+    // Basic frontend validation
+    const invalid = parsedEmployees.filter(emp =>
+      !emp.name || !emp.email || !emp.department || !emp.position ||
+      !emp.salary || !emp.joiningDate || !emp.loginId || !emp.password
     );
-  }
+
+    if (invalid.length > 0) {
+      return alert(`${invalid.length} employees have missing required fields. Please check the Excel.`);
+    }
+
+    setBulkLoading(true);
+    setBulkResult(null);
+
+    try {
+      // Remove helper field before sending
+      const payload = parsedEmployees.map(({ _row, ...rest }) => rest);
+
+      const res = await fetch(`${API_URL}/employee/create/employee/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setBulkResult({
+          success: true,
+          message: data.message,
+          summary: data.summary || {
+            total: payload.length,
+            success: data.count || 0,
+            failed: (payload.length - (data.count || 0)),
+            errors: data.summary?.errors || []
+          }
+        });
+        setSuccess(data.message || "Bulk employees added successfully!");
+        fetchEmployees();
+        // Clear file after success
+        setBulkFile(null);
+        setParsedEmployees([]);
+      } else {
+        setBulkResult({
+          success: false,
+          message: data.message || "Bulk upload failed",
+          errors: data.errors || data.summary?.errors || []
+        });
+      }
+    } catch (err) {
+      console.error("Bulk upload error:", err);
+      setBulkResult({
+        success: false,
+        message: "Network error while uploading",
+        errors: [err.message]
+      });
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const closeBulkModal = () => {
+    setIsBulkModalOpen(false);
+    setBulkFile(null);
+    setParsedEmployees([]);
+    setBulkResult(null);
+  };
+
+  // === FILTERED & SORTED EMPLOYEES ===
+  const filtered = employees
+    .filter(emp => {
+      const search = searchTerm.toLowerCase();
+      return (
+        emp.name?.toLowerCase().includes(search) ||
+        emp.email?.toLowerCase().includes(search) ||
+        emp.position?.toLowerCase().includes(search)
+      ) && (departmentFilter === "all" || emp.department === +departmentFilter);
+    })
+    .filter(emp => {
+      switch (statusSort) {
+        case "online":
+          return emp.isOnline === true;
+        case "offline":
+          return emp.isOnline === false;
+        case "all":
+        default:
+          return true;
+      }
+    })
+    .sort((a, b) => {
+      switch (statusSort) {
+        case "online-first":
+          return (b.isOnline ? 1 : 0) - (a.isOnline ? 1 : 0);
+        case "offline-first":
+          return (a.isOnline ? 1 : 0) - (b.isOnline ? 1 : 0);
+        default:
+          return 0;
+      }
+    });
+
+  const onlineCount = employees.filter(e => e.isOnline).length;
+
+  useEffect(() => {
+    if (success) setTimeout(() => setSuccess(""), 5000);
+  }, [success]);
+
+  if (!token) return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">Redirecting...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-2">Employee Management</h1>
+        <p className="text-center text-gray-600 mb-6">Real-time Live Status Tracking</p>
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Student Management</h1>
-          <p className="text-gray-600 mt-2">Manage Student Fees & Reminders</p>
-        </div>
-
-        {/* Success Message */}
         {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6 animate-pulse">
-            <strong>Success: </strong>{success}
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            <strong>Error: </strong>{error}
+          <div className="bg-green-100 text-green-800 p-4 rounded-lg mb-4 text-center">
+            {success}
           </div>
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-          {[
-            { label: "Total Students", value: students.length, icon: UserIcon, color: "blue" },
-            { label: "Active Courses", value: courses.length, icon: BookIcon, color: "green" },
-            { label: "Pending Fees", value: `₹${totalPendingFees.toLocaleString()}`, icon: CurrencyIcon, color: "purple" },
-            { label: "Excel Import", value: "Available", icon: FileIcon, color: "orange" },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-lg p-4 md:p-6 border-l-4" style={{
-              borderLeftColor: i === 0 ? "#3B82F6" : i === 1 ? "#10B981" : i === 2 ? "#8B5CF6" : "#F97316"
-            }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs md:text-sm text-gray-600">{stat.label}</p>
-                  <p className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-2 md:p-3 rounded-full bg-${stat.color}-100`}>
-                  <stat.icon className={`w-4 h-4 md:w-6 md:h-6 text-${stat.color}-600`} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Action Buttons Bar */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden mb-6 p-4">
-          <div className="flex flex-wrap gap-3 justify-between items-center">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">Students Directory</h2>
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setShowImportModal(true)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
-              >
-                <UploadIcon className="w-4 h-4" />
-                Import Excel
-              </button>
-              <button
-                onClick={handleExportExcel}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
-              >
-                <DownloadIcon className="w-4 h-4" />
-                Export Excel
-              </button>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
-              >
-                <PlusIcon className="w-4 h-4" />
-                Add Student
-              </button>
-            </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-5 rounded-xl shadow text-center">
+            <p className="text-gray-600">Total Employees</p>
+            <p className="text-3xl font-bold">{employees.length}</p>
           </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6 p-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search by name, email, phone, or course..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
-            />
-            <SearchIcon className="absolute left-4 top-3.5 text-gray-400 w-5 h-5" />
+          <div className="bg-white p-5 rounded-xl shadow text-center">
+            <p className="text-gray-600">Online Now</p>
+            <p className="text-3xl font-bold text-green-600">{onlineCount}</p>
+          </div>
+          <div className="bg-white p-5 rounded-xl shadow text-center">
+            <p className="text-gray-600">Offline</p>
+            <p className="text-3xl font-bold text-red-600">{employees.length - onlineCount}</p>
+          </div>
+          <div className="bg-white p-5 rounded-xl shadow text-center">
             <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600"
+              onClick={fetchEmployees}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              ✕
+              Refresh Status
             </button>
           </div>
         </div>
 
-        {/* Students Table */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden mb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Student</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Course</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Fees Status</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {students.map((student) => (
-                  <tr key={student._id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                          {student.name.split(" ").map(n => n[0]).join("")}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900 text-sm md:text-base">{student.name}</div>
-                          <div className="text-xs text-gray-500">{student.email}</div>
-                          <div className="text-xs text-gray-400">{student.phone}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="text-sm font-medium">{student.courseName || getCourseName(student.selectedCourse)}</div>
-                      <div className="text-xs text-gray-500">₹{student.totalFees?.toLocaleString()}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="text-sm">
-                        Paid: <span className="text-green-600 font-medium">₹{student.paidFees?.toLocaleString()}</span>
-                      </div>
-                      <div className={`text-xs ${student.pendingFees > 0 ? "text-red-600 font-medium" : "text-green-600"}`}>
-                        Pending: ₹{student.pendingFees?.toLocaleString() || 0}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${student.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : student.status === 'completed'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                        }`}>
-                        {student.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => setSelectedStudent(student)}
-                          className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition"
-                          title="View Details"
-                        >
-                          <EyeIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openEditModal(student)}
-                          className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition"
-                          title="Edit Student"
-                        >
-                          <EditIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openDeleteModal(student)}
-                          className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition"
-                          title="Delete Student"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+        {/* Controls and Table */}
+        <div className="bg-white rounded-xl shadow overflow-hidden">
+          <div className="p-6 border-b flex flex-col md:flex-row justify-between gap-4">
+            <h2 className="text-2xl font-bold">All Employees</h2>
+            <div className="flex gap-3 flex-wrap">
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search employees..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <select
+                value={departmentFilter}
+                onChange={e => setDepartmentFilter(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Departments</option>
+                {departments.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
-              </tbody>
-            </table>
+              </select>
+              <select
+                value={statusSort}
+                onChange={e => setStatusSort(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {statusSortOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+
+              {/* BULK ADD BUTTON */}
+              <button
+                onClick={() => setIsBulkModalOpen(true)}
+                className="bg-purple-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700 transition-colors"
+              >
+                <UploadIcon /> Bulk Add
+              </button>
+
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+              >
+                <UserIcon /> Add Employee
+              </button>
+            </div>
           </div>
 
-          {students.length === 0 && !loading && (
-            <div className="text-center py-12 text-gray-500">
-              <div className="text-lg mb-2">No students found</div>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Add your first student
-                </button>
-                <span className="text-gray-400">or</span>
-                <button
-                  onClick={() => setShowImportModal(true)}
-                  className="text-green-600 hover:text-green-700 font-medium"
-                >
-                  Import from Excel
-                </button>
-              </div>
+          {loading ? (
+            <div className="p-10 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Loading live status...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-4 text-left">Status</th>
+                    <th className="px-6 py-4 text-left">Name</th>
+                    <th className="px-6 py-4 text-left">Email</th>
+                    <th className="px-6 py-4 text-left">Department</th>
+                    <th className="px-6 py-4 text-left">Position</th>
+                    <th className="px-6 py-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {filtered.length > 0 ? (
+                    filtered.map(emp => (
+                      <tr key={emp._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <LiveStatusIcon isActive={emp.isOnline} />
+                            <span className={emp.isOnline ? "text-green-600 font-medium" : "text-red-600"}>
+                              {emp.isOnline ? "Online" : "Offline"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{emp.name}</td>
+                        <td className="px-6 py-4">{emp.email}</td>
+                        <td className="px-6 py-4">
+                          {departments.find(d => d.id === emp.department)?.name || "—"}
+                        </td>
+                        <td className="px-6 py-4">{emp.position}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => { setSelectedEmployee(emp); setIsViewModalOpen(true); }}
+                              className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
+                              title="View Details"
+                            >
+                              <EyeIcon />
+                            </button>
+                            <button
+                              onClick={() => { setSelectedEmployee(emp); setIsEditModalOpen(true); }}
+                              className="text-yellow-600 hover:bg-yellow-50 p-2 rounded transition-colors"
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setResetPasswordData({
+                                  employeeId: emp._id,
+                                  employeeName: emp.name,
+                                  newPassword: "",
+                                  confirmPassword: ""
+                                });
+                                setIsResetPasswordModalOpen(true);
+                              }}
+                              className="text-green-600 hover:bg-green-50 p-2 rounded transition-colors"
+                              title="Reset Password"
+                            >
+                              Reset
+                            </button>
+                            <button
+                              onClick={() => handleDelete(emp._id)}
+                              className="text-red-600 hover:bg-red-50 p-2 rounded transition-colors"
+                              title="Delete"
+                            >
+                              <DeleteIcon />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                        No employees found matching your filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
-        {/* IMPORT EXCEL MODAL */}
-        {showImportModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-gray-800">
-                    {importStep === 1 && "Import Students from Excel"}
-                    {importStep === 2 && "Preview Import Data"}
-                    {importStep === 3 && "Importing Students"}
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setShowImportModal(false);
-                      resetImportProcess();
-                    }}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <CloseIcon className="w-6 h-6" />
-                  </button>
-                </div>
+        {/* ========== BULK ADD MODAL ========== */}
+        {isBulkModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-6 border-b">
+                <h3 className="text-2xl font-bold">Bulk Add Employees</h3>
+                <button onClick={closeBulkModal} className="text-gray-500 hover:text-gray-700">
+                  <CloseIcon />
+                </button>
               </div>
 
-              <div className="p-6">
-                {/* Step 1: Upload */}
-                {importStep === 1 && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                        <UploadIcon className="w-8 h-8 text-green-600" />
-                      </div>
-                      <h4 className="text-lg font-semibold text-gray-800 mb-2">Upload Excel File</h4>
-                      <p className="text-gray-600 mb-6">Upload an Excel file with student data. Download our template for the correct format.</p>
-                    </div>
+              <div className="p-6 space-y-6">
+                {/* Step 1: Download Template */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                  <h4 className="font-semibold text-blue-800 mb-2">Step 1: Download Template</h4>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Download the Excel template, fill employee details, then upload it below.
+                  </p>
+                  <button
+                    onClick={downloadTemplate}
+                    className="bg-blue-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                  >
+                    <DownloadIcon /> Download Excel Template
+                  </button>
+                </div>
 
-                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-green-500 transition">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept=".xlsx,.xls,.csv"
-                        className="hidden"
-                        id="file-upload"
-                      />
-                      <label htmlFor="file-upload" className="cursor-pointer">
-                        <UploadIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <div className="text-gray-700 font-medium mb-2">Click to upload or drag and drop</div>
-                        <div className="text-gray-500 text-sm">Excel files only (.xlsx, .xls, .csv)</div>
-                      </label>
-                    </div>
+                {/* Step 2: Upload File */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
+                  <h4 className="font-semibold text-gray-800 mb-2">Step 2: Upload Filled Excel</h4>
+                  <input
+                    type="file"
+                    accept=".xlsx, .xls"
+                    onChange={handleFileChange}
+                    className="block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2.5 file:px-4
+                      file:rounded-lg file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-purple-50 file:text-purple-700
+                      hover:file:bg-purple-100 cursor-pointer"
+                  />
+                  {bulkFile && (
+                    <p className="mt-2 text-sm text-green-600">
+                      Selected: <strong>{bulkFile.name}</strong> ({parsedEmployees.length} rows found)
+                    </p>
+                  )}
+                </div>
 
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h5 className="font-semibold text-blue-800 mb-2">File Format Requirements:</h5>
-                      <ul className="text-sm text-blue-700 list-disc pl-5 space-y-1">
-                        <li>Include columns: Name, Email, Phone, Course, Total Fees, Paid Fees, Enrollment Date</li>
-                        <li>First row should contain column headers</li>
-                        <li>Supported courses: Web Development, Data Science, Digital Marketing, Graphic Design</li>
-                      </ul>
-                    </div>
-
-                    <div className="flex justify-center">
-                      <button
-                        onClick={downloadTemplate}
-                        className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2"
-                      >
-                        <DownloadIcon className="w-4 h-4" />
-                        Download Excel Template
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 2: Preview */}
-                {importStep === 2 && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                        <EyeIcon className="w-8 h-8 text-blue-600" />
-                      </div>
-                      <h4 className="text-lg font-semibold text-gray-800 mb-2">Preview Import Data</h4>
-                      <p className="text-gray-600 mb-6">
-                        Found <span className="font-bold text-green-600">{importData.length}</span> students to import.
-                        Showing first 5 records.
-                      </p>
-                    </div>
-
-                    <div className="overflow-x-auto border rounded-lg">
-                      <table className="w-full">
-                        <thead className="bg-gray-50">
+                {/* Preview */}
+                {parsedEmployees.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Preview ({parsedEmployees.length} employees)</h4>
+                    <div className="overflow-x-auto max-h-60 border rounded-lg">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-100 sticky top-0">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600">Name</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600">Email</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600">Course</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600">Fees</th>
+                            <th className="px-3 py-2 text-left">Name</th>
+                            <th className="px-3 py-2 text-left">Email</th>
+                            <th className="px-3 py-2 text-left">Department</th>
+                            <th className="px-3 py-2 text-left">Position</th>
+                            <th className="px-3 py-2 text-left">Login ID</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {importPreview.map((student, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 text-sm">{student.name}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600">{student.email}</td>
-                              <td className="px-4 py-3 text-sm">{student.courseName}</td>
-                              <td className="px-4 py-3 text-sm">
-                                <div>Total: ₹{student.totalFees?.toLocaleString()}</div>
-                                <div className="text-green-600">Paid: ₹{student.paidFees?.toLocaleString()}</div>
+                        <tbody className="divide-y">
+                          {parsedEmployees.slice(0, 10).map((emp, idx) => (
+                            <tr key={idx} className="hover:bg-gray-50">
+                              <td className="px-3 py-2">{emp.name || <span className="text-red-500">Missing</span>}</td>
+                              <td className="px-3 py-2">{emp.email || <span className="text-red-500">Missing</span>}</td>
+                              <td className="px-3 py-2">
+                                {departments.find(d => d.id === emp.department)?.name || <span className="text-red-500">Invalid</span>}
                               </td>
+                              <td className="px-3 py-2">{emp.position || <span className="text-red-500">Missing</span>}</td>
+                              <td className="px-3 py-2">{emp.loginId || <span className="text-red-500">Missing</span>}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
+                      {parsedEmployees.length > 10 && (
+                        <p className="text-center text-xs text-gray-500 py-2">
+                          ...and {parsedEmployees.length - 10} more
+                        </p>
+                      )}
                     </div>
+                  </div>
+                )}
 
-                    {importData.length > 5 && (
-                      <div className="text-center text-sm text-gray-500">
-                        + {importData.length - 5} more records...
+                {/* Result */}
+                {bulkResult && (
+                  <div className={`rounded-lg p-4 ${bulkResult.success ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
+                    <p className={`font-medium ${bulkResult.success ? "text-green-800" : "text-red-800"}`}>
+                      {bulkResult.message}
+                    </p>
+                    {bulkResult.summary && (
+                      <div className="mt-2 text-sm">
+                        <p>Total: {bulkResult.summary.total} | Success: {bulkResult.summary.success} | Failed: {bulkResult.summary.failed}</p>
                       </div>
                     )}
-
-                    <div className="flex justify-between pt-4">
-                      <button
-                        onClick={resetImportProcess}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-                      >
-                        ← Back to Upload
-                      </button>
-                      <button
-                        onClick={handleImportConfirm}
-                        className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
-                      >
-                        Confirm Import ({importData.length} students)
-                      </button>
-                    </div>
+                    {bulkResult.errors && bulkResult.errors.length > 0 && (
+                      <ul className="mt-2 text-sm text-red-700 list-disc list-inside max-h-32 overflow-y-auto">
+                        {bulkResult.errors.slice(0, 8).map((err, i) => (
+                          <li key={i}>{err}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
 
-                {/* Step 3: Importing */}
-                {importStep === 3 && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                        <UploadIcon className="w-8 h-8 text-purple-600" />
-                      </div>
-                      <h4 className="text-lg font-semibold text-gray-800 mb-2">Importing Students</h4>
-                      <p className="text-gray-600 mb-6">Please wait while we import {importData.length} students...</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-medium">{uploadProgress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div
-                          className="bg-green-600 h-3 rounded-full transition-all duration-300"
-                          style={{ width: `${uploadProgress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="text-center text-sm text-gray-500">
-                      {uploadProgress < 100 ? "Processing data..." : "Import completed successfully!"}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ADD STUDENT MODAL */}
-        {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-gray-800">Add New Student</h3>
-                  <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
-                    <CloseIcon className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              <form onSubmit={handleAddStudent} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newStudent.name}
-                    onChange={(e) => handleInputChange(e, false)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={newStudent.email}
-                    onChange={(e) => handleInputChange(e, false)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={newStudent.phone}
-                    onChange={(e) => handleInputChange(e, false)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Course *</label>
-                  <select
-                    name="selectedCourse"
-                    value={newStudent.selectedCourse}
-                    onChange={(e) => handleInputChange(e, false)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  >
-                    <option value="">Select a course</option>
-                    {courses.map(course => (
-                      <option key={course.id} value={course.id}>
-                        {course.name} - ₹{course.fee.toLocaleString()} ({course.duration})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Fees (₹) *</label>
-                  <input
-                    type="number"
-                    name="totalFees"
-                    value={newStudent.totalFees}
-                    onChange={(e) => handleInputChange(e, false)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Paid Fees (₹)</label>
-                  <input
-                    type="number"
-                    name="paidFees"
-                    value={newStudent.paidFees}
-                    onChange={(e) => handleInputChange(e, false)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div className="pt-4">
+                {/* Actions */}
+                <div className="flex justify-end gap-4 pt-4 border-t">
                   <button
-                    type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition"
+                    type="button"
+                    onClick={closeBulkModal}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                   >
-                    Add Student
+                    Close
                   </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* EDIT STUDENT MODAL */}
-        {showEditModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-gray-800">Edit Student</h3>
-                  <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
-                    <CloseIcon className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              <form onSubmit={handleEditStudent} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={editStudent.name}
-                    onChange={(e) => handleInputChange(e, true)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={editStudent.email}
-                    onChange={(e) => handleInputChange(e, true)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={editStudent.phone}
-                    onChange={(e) => handleInputChange(e, true)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Course *</label>
-                  <select
-                    name="selectedCourse"
-                    value={editStudent.selectedCourse}
-                    onChange={(e) => handleInputChange(e, true)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  >
-                    <option value="">Select a course</option>
-                    {courses.map(course => (
-                      <option key={course.id} value={course.id}>
-                        {course.name} - ₹{course.fee.toLocaleString()} ({course.duration})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Fees (₹) *</label>
-                  <input
-                    type="number"
-                    name="totalFees"
-                    value={editStudent.totalFees}
-                    onChange={(e) => handleInputChange(e, true)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Paid Fees (₹)</label>
-                  <input
-                    type="number"
-                    name="paidFees"
-                    value={editStudent.paidFees}
-                    onChange={(e) => handleInputChange(e, true)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select
-                    name="status"
-                    value={editStudent.status}
-                    onChange={(e) => handleInputChange(e, true)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  >
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-
-                <div className="pt-4">
                   <button
-                    type="submit"
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg transition"
+                    onClick={handleBulkUpload}
+                    disabled={parsedEmployees.length === 0 || bulkLoading}
+                    className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    Update Student
+                    {bulkLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <UploadIcon /> Upload {parsedEmployees.length > 0 ? `${parsedEmployees.length} Employees` : ""}
+                      </>
+                    )}
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         )}
 
-        {/* DELETE CONFIRMATION MODAL */}
-        {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-gray-800">Confirm Delete</h3>
-                  <button onClick={() => setShowDeleteModal(false)} className="text-gray-400 hover:text-gray-600">
-                    <CloseIcon className="w-6 h-6" />
-                  </button>
-                </div>
+        {/* ADD EMPLOYEE MODAL */}
+        {isAddModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-6 border-b">
+                <h3 className="text-2xl font-bold">Add New Employee</h3>
+                <button
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <CloseIcon />
+                </button>
               </div>
-
-              <div className="p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold">
-                    {studentToDelete?.name.split(" ").map(n => n[0]).join("")}
+              <form onSubmit={handleAdd} className="p-6 space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter full name"
+                      value={newEmployee.name}
+                      onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">{studentToDelete?.name}</div>
-                    <div className="text-sm text-gray-600">{studentToDelete?.email}</div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="Enter email"
+                      value={newEmployee.email}
+                      onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      placeholder="Enter phone number"
+                      value={newEmployee.phone}
+                      onChange={e => setNewEmployee({ ...newEmployee, phone: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Department *</label>
+                    <select
+                      required
+                      value={newEmployee.department}
+                      onChange={e => setNewEmployee({ ...newEmployee, department: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map(d => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Position *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter position"
+                      value={newEmployee.position}
+                      onChange={e => setNewEmployee({ ...newEmployee, position: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Salary *</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="Enter salary"
+                      value={newEmployee.salary}
+                      onChange={e => setNewEmployee({ ...newEmployee, salary: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Joining Date *</label>
+                    <input
+                      type="date"
+                      required
+                      value={newEmployee.joiningDate}
+                      onChange={e => setNewEmployee({ ...newEmployee, joiningDate: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Login ID *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter login ID"
+                      value={newEmployee.loginId}
+                      onChange={e => setNewEmployee({ ...newEmployee, loginId: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Password (min 6) *</label>
+                    <input
+                      type="text"
+                      required
+                      minLength="6"
+                      placeholder="Enter password"
+                      value={newEmployee.password}
+                      onChange={e => setNewEmployee({ ...newEmployee, password: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
                   </div>
                 </div>
-
-                <p className="text-gray-700 mb-6">
-                  Are you sure you want to delete <span className="font-semibold">{studentToDelete?.name}</span>? This action cannot be undone and all associated data will be permanently removed.
-                </p>
-
-                <div className="flex gap-3">
+                <div className="flex justify-end gap-4 pt-6 border-t">
                   <button
-                    onClick={() => setShowDeleteModal(false)}
-                    className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={handleDeleteStudent}
-                    className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
+                    type="submit"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    <TrashIcon className="w-4 h-4" />
-                    Delete Student
+                    Create Employee
                   </button>
                 </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW EMPLOYEE MODAL */}
+        {isViewModalOpen && selectedEmployee && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+              <div className="flex justify-between items-center p-6 border-b">
+                <h3 className="text-2xl font-bold">Employee Details</h3>
+                <button
+                  onClick={() => setIsViewModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">
+                    {selectedEmployee.name?.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold">{selectedEmployee.name}</h4>
+                    <p className="text-gray-600">{selectedEmployee.email}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Department:</span>
+                    <p>{departments.find(d => d.id === selectedEmployee.department)?.name || "—"}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Position:</span>
+                    <p>{selectedEmployee.position}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Phone:</span>
+                    <p>{selectedEmployee.phone || "—"}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Status:</span>
+                    <p className={selectedEmployee.isOnline ? "text-green-600" : "text-red-600"}>
+                      {selectedEmployee.isOnline ? "Online" : "Offline"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Joining Date:</span>
+                    <p>{selectedEmployee.joiningDate || "—"}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end p-6 border-t">
+                <button
+                  onClick={() => setIsViewModalOpen(false)}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* STUDENT DETAILS MODAL */}
-        {selectedStudent && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-gray-800">Student Details</h3>
-                  <button onClick={() => setSelectedStudent(null)} className="text-gray-400 hover:text-gray-600">
-                    <CloseIcon className="w-6 h-6" />
+        {/* EDIT EMPLOYEE MODAL */}
+        {isEditModalOpen && selectedEmployee && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-6 border-b">
+                <h3 className="text-2xl font-bold">Edit Employee</h3>
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <form onSubmit={handleEdit} className="p-6 space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={selectedEmployee.name}
+                      onChange={e => setSelectedEmployee({ ...selectedEmployee, name: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={selectedEmployee.email}
+                      onChange={e => setSelectedEmployee({ ...selectedEmployee, email: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      value={selectedEmployee.phone}
+                      onChange={e => setSelectedEmployee({ ...selectedEmployee, phone: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                    <select
+                      value={selectedEmployee.department}
+                      onChange={e => setSelectedEmployee({ ...selectedEmployee, department: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      {departments.map(d => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
+                    <input
+                      type="text"
+                      required
+                      value={selectedEmployee.position}
+                      onChange={e => setSelectedEmployee({ ...selectedEmployee, position: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Joining Date</label>
+                    <input
+                      type="date"
+                      value={selectedEmployee.joiningDate}
+                      onChange={e => setSelectedEmployee({ ...selectedEmployee, joiningDate: e.target.value })}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-4 pt-6 border-t">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
                   </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Update Employee
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* RESET PASSWORD MODAL */}
+        {isResetPasswordModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+              <div className="flex justify-between items-center p-6 border-b">
+                <h3 className="text-2xl font-bold">Reset Password</h3>
+                <button
+                  onClick={() => setIsResetPasswordModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <form onSubmit={handleResetPassword} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Employee</label>
+                  <p className="font-medium">{resetPasswordData.employeeName}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">New Password *</label>
+                  <input
+                    type="text"
+                    required
+                    minLength="6"
+                    placeholder="Enter new password"
+                    value={resetPasswordData.newPassword}
+                    onChange={e => setResetPasswordData({ ...resetPasswordData, newPassword: e.target.value })}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Confirm new password"
+                    value={resetPasswordData.confirmPassword}
+                    onChange={e => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex justify-end gap-4 pt-6 border-t">
+                  <button
+                    type="button"
+                    onClick={() => setIsResetPasswordModalOpen(false)}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Reset Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* CREDENTIALS MODAL */}
+        {isCredentialsModalOpen && newEmployeeCredentials && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+              <div className="flex justify-between items-center p-6 border-b">
+                <h3 className="text-2xl font-bold">Employee Credentials</h3>
+                <button
+                  onClick={() => setIsCredentialsModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-800 text-sm">
+                    <strong>Important:</strong> Save these credentials securely. They will not be shown again.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <span className="font-medium text-gray-700">Name:</span>
+                    <p className="mt-1">{newEmployeeCredentials.name}</p>
+                  </div>
+                  {newEmployeeCredentials.email && (
+                    <div>
+                      <span className="font-medium text-gray-700">Email:</span>
+                      <p className="mt-1">{newEmployeeCredentials.email}</p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="font-medium text-gray-700">Login ID:</span>
+                    <p className="mt-1">{newEmployeeCredentials.loginId}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Password:</span>
+                    <p className="mt-1 font-mono">{newEmployeeCredentials.password}</p>
+                  </div>
                 </div>
               </div>
-
-              <div className="p-6">
-                <div className="flex flex-col items-center mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-4">
-                    {selectedStudent.name.split(" ").map(n => n[0]).join("")}
-                  </div>
-                  <h4 className="text-xl font-bold text-gray-900">{selectedStudent.name}</h4>
-                  <p className="text-gray-600">{selectedStudent.email}</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Phone:</span>
-                    <span className="font-medium">{selectedStudent.phone}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Course:</span>
-                    <span className="font-medium">{selectedStudent.courseName || getCourseName(selectedStudent.selectedCourse)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total Fees:</span>
-                    <span className="font-medium">₹{selectedStudent.totalFees?.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Paid Fees:</span>
-                    <span className="font-medium text-green-600">₹{selectedStudent.paidFees?.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Pending Fees:</span>
-                    <span className={`font-medium ${selectedStudent.pendingFees > 0 ? "text-red-600" : "text-green-600"}`}>
-                      ₹{(selectedStudent.pendingFees || 0).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Enrollment Date:</span>
-                    <span className="font-medium">{selectedStudent.enrollmentDate}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedStudent.status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : selectedStudent.status === 'completed'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'
-                      }`}>
-                      {selectedStudent.status}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      openEditModal(selectedStudent);
-                      setSelectedStudent(null);
-                    }}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition"
-                  >
-                    Edit Student Details
-                  </button>
-                </div>
+              <div className="flex justify-end gap-4 p-6 border-t">
+                <button
+                  onClick={copyCredentialsToClipboard}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Copy to Clipboard
+                </button>
+                <button
+                  onClick={() => setIsCredentialsModalOpen(false)}
+                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
@@ -1271,4 +1233,4 @@ const StudentManagement = () => {
   );
 };
 
-export default StudentManagement;
+export default EmployeeManagement;
