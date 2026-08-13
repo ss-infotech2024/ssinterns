@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
-const API_URL = "https://ssinternsbacknedv2.onrender.com/api";
+const API_URL = "http://localhost:5000/api";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    OPTIMIZED CACHE with longer TTL and pre-fetch support

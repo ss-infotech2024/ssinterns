@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 const API = axios.create({
-  baseURL: "https://ssinternsbacknedv2.onrender.com/api",
+  baseURL: "http://localhost:5000/api",
   timeout: 10000,
 });
 API.interceptors.request.use((config) => {
@@ -370,126 +370,597 @@ const EmployeeManagement = () => {
   };
 
     const handleBulkFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+      const file = e.target.files?.[0];
 
-    setBulkFile(file);
-    setBulkResult(null);
-    setParsedEmployees([]);
+      if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      setBulkFile(file);
+      setBulkResult(null);
+      setParsedEmployees([]);
 
-        if (!json.length) {
-          toast.error("Excel file is empty");
-          return;
-        }
+      const reader = new FileReader();
 
-        // Department name → id map
-        const deptMap = {};
-        DEPARTMENTS.forEach((d) => {
-          deptMap[d.name.toLowerCase()] = d.id;
-        });
+      reader.onload = (evt) => {
+        try {
+          const data = new Uint8Array(evt.target.result);
 
-        const mapped = json.map((row, i) => {
-          // Support both clean headers and old headers
-          const name = String(row["Full Name"] || row.name || "").trim();
-          const email = String(row["Email"] || row.email || "").trim().toLowerCase();
-          const phone = String(row["Phone"] || row.phone || "").trim() || "0000000000";
-          const position = String(row["Position"] || row.position || "").trim();
-          const salary = Number(row["Salary"] || row.salary) || 0;
-          const joiningDate = String(row["Joining Date"] || row.joiningDate || "").trim();
-          const loginId = String(row["Login ID"] || row.loginId || "").trim();
-          const password = String(row["Password"] || row.password || "").trim();
-          const type = String(row["Type"] || row.employeeType || "Employee").trim() || "Employee";
+          const workbook = XLSX.read(data, {
+            type: "array",
+            cellDates: true,
+          });
 
-          // Department handling
-          const rawDept = String(row["Department"] || row.department || "").trim().toLowerCase();
-          let departmentId = null;
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
 
-          if (rawDept && !isNaN(rawDept)) {
-            departmentId = Number(rawDept);
-          } else {
-            departmentId = deptMap[rawDept] || null;
+          const json = XLSX.utils.sheet_to_json(sheet, {
+            defval: "",
+            raw: true,
+          });
+
+          if (!json.length) {
+            toast.error("Excel file is empty");
+            return;
           }
 
-          return {
-            name,
-            email,
-            phone,
-            department: departmentId,
-            position,
-            salary,
-            joiningDate,
-            loginId,
-            password,
-            status: "Active",
-            employeeType: type === "Intern" ? "Intern" : "Employee",
-            _row: i + 2
+          // ---------------------------------------------------------
+          // Normalize Excel headers
+          // ---------------------------------------------------------
+          const normalizeHeader = (value) => {
+            return String(value || "")
+              .trim()
+              .toLowerCase()
+              .replace(/\*/g, "")
+              .replace(/\(₹\)/g, "")
+              .replace(/\(rs\.?\)/gi, "")
+              .replace(/₹/g, "")
+              .replace(/_/g, " ")
+              .replace(/\s+/g, " ")
+              .trim();
           };
-        });
 
-        setParsedEmployees(mapped);
-      } catch (err) {
-        console.error(err);
+          // ---------------------------------------------------------
+          // Department mapping
+          // ---------------------------------------------------------
+          const deptMap = {};
+
+          DEPARTMENTS.forEach((d) => {
+            deptMap[normalizeHeader(d.name)] = d.id;
+          });
+
+          // ---------------------------------------------------------
+          // Get value from Excel row
+          // ---------------------------------------------------------
+          const getValue = (row, possibleHeaders) => {
+            const rowKeys = Object.keys(row);
+
+            for (const header of possibleHeaders) {
+              const normalizedTarget = normalizeHeader(header);
+
+              const actualKey = rowKeys.find(
+                (key) => normalizeHeader(key) === normalizedTarget
+              );
+
+              if (actualKey !== undefined) {
+                return row[actualKey];
+              }
+            }
+
+            return "";
+          };
+
+          // ---------------------------------------------------------
+          // Excel date converter
+          // ---------------------------------------------------------
+          const convertExcelDate = (value) => {
+            if (value === null || value === undefined || value === "") {
+              return "";
+            }
+
+            // JS Date object
+            if (value instanceof Date) {
+              if (isNaN(value.getTime())) return "";
+
+              const year = value.getFullYear();
+              const month = String(value.getMonth() + 1).padStart(2, "0");
+              const day = String(value.getDate()).padStart(2, "0");
+
+              return `${year}-${month}-${day}`;
+            }
+
+            // Excel serial number
+            if (typeof value === "number") {
+              const parsed = XLSX.SSF.parse_date_code(value);
+
+              if (parsed) {
+                return `${parsed.y}-${String(parsed.m).padStart(
+                  2,
+                  "0"
+                )}-${String(parsed.d).padStart(2, "0")}`;
+              }
+            }
+
+            const str = String(value).trim();
+
+            if (!str) return "";
+
+            // YYYY-MM-DD or YYYY/MM/DD
+            let match = str.match(
+              /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/
+            );
+
+            if (match) {
+              const [, year, month, day] = match;
+
+              return `${year}-${String(month).padStart(
+                2,
+                "0"
+              )}-${String(day).padStart(2, "0")}`;
+            }
+
+            // DD/MM/YYYY or DD-MM-YYYY
+            match = str.match(
+              /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/
+            );
+
+            if (match) {
+              const [, day, month, year] = match;
+
+              return `${year}-${String(month).padStart(
+                2,
+                "0"
+              )}-${String(day).padStart(2, "0")}`;
+            }
+
+            const parsedDate = new Date(str);
+
+            if (!isNaN(parsedDate.getTime())) {
+              return parsedDate.toISOString().split("T")[0];
+            }
+
+            return "";
+          };
+
+          // ---------------------------------------------------------
+          // Convert Excel rows
+          // ---------------------------------------------------------
+          const mapped = json.map((row, index) => {
+            const name = String(
+              getValue(row, [
+                "Full Name",
+                "Full Name *",
+                "Name",
+                "name",
+              ])
+            ).trim();
+
+            const email = String(
+              getValue(row, [
+                "Email",
+                "Email *",
+                "email",
+              ])
+            )
+              .trim()
+              .toLowerCase();
+
+            const phone = String(
+              getValue(row, [
+                "Phone",
+                "Phone Number",
+                "phone",
+              ])
+            ).trim();
+
+            const position = String(
+              getValue(row, [
+                "Position",
+                "Position *",
+                "position",
+              ])
+            ).trim();
+
+            // -------------------------------------------------------
+            // Salary
+            // -------------------------------------------------------
+            const rawSalary = getValue(row, [
+              "Salary",
+              "Salary (₹)",
+              "Salary (₹) *",
+              "Salary ₹",
+              "Salary Rs",
+              "salary",
+            ]);
+
+            const salaryString = String(rawSalary ?? "")
+              .replace(/[₹,]/g, "")
+              .replace(/\/-/g, "")
+              .replace(/rs\.?/gi, "")
+              .replace(/inr/gi, "")
+              .replace(/[^\d.-]/g, "")
+              .trim();
+
+            const salary = Number(salaryString) || 0;
+
+            // -------------------------------------------------------
+            // Joining Date
+            // -------------------------------------------------------
+            const rawJoiningDate = getValue(row, [
+              "Joining Date",
+              "Joining Date *",
+              "JoiningDate",
+              "joiningDate",
+            ]);
+
+            const joiningDate = convertExcelDate(rawJoiningDate);
+
+            // -------------------------------------------------------
+            // Login ID
+            // -------------------------------------------------------
+            const loginId = String(
+              getValue(row, [
+                "Login ID",
+                "Login ID *",
+                "LoginID",
+                "loginId",
+              ])
+            ).trim();
+
+            // -------------------------------------------------------
+            // Password
+            // -------------------------------------------------------
+            const password = String(
+              getValue(row, [
+                "Password",
+                "Password *",
+                "password",
+              ])
+            ).trim();
+
+            // -------------------------------------------------------
+            // Department
+            // -------------------------------------------------------
+            const rawDepartment = String(
+              getValue(row, [
+                "Department",
+                "Department *",
+                "department",
+              ])
+            )
+              .trim()
+              .toLowerCase();
+
+            let departmentId = null;
+
+            if (rawDepartment) {
+              // Excel contains numeric department ID
+              if (/^\d+$/.test(rawDepartment)) {
+                const numericDepartment = Number(rawDepartment);
+
+                if (
+                  DEPARTMENTS.some(
+                    (department) =>
+                      department.id === numericDepartment
+                  )
+                ) {
+                  departmentId = numericDepartment;
+                }
+              } else {
+                departmentId = deptMap[rawDepartment] || null;
+              }
+            }
+
+            // -------------------------------------------------------
+            // Employee Type
+            // -------------------------------------------------------
+            const rawType = String(
+              getValue(row, [
+                "Type",
+                "Employee Type",
+                "Employee Type *",
+                "employeeType",
+              ])
+            )
+              .trim()
+              .toLowerCase();
+
+            const employeeType =
+              rawType === "intern" ? "Intern" : "Employee";
+
+            return {
+              name,
+              email,
+              phone,
+              department: departmentId,
+              position,
+              salary,
+              joiningDate,
+              loginId,
+              password,
+              status: "Active",
+              employeeType,
+              _row: index + 2,
+            };
+          });
+
+          // ---------------------------------------------------------
+          // Save parsed employees
+          // ---------------------------------------------------------
+          setParsedEmployees(mapped);
+
+          // ---------------------------------------------------------
+          // Debug
+          // ---------------------------------------------------------
+          console.log("Excel rows:", json);
+          console.log("Parsed employees:", mapped);
+
+          // ---------------------------------------------------------
+          // Validate rows and identify EXACT missing fields
+          // ---------------------------------------------------------
+          const invalidRows = mapped
+            .map((employee) => {
+              const missing = [];
+
+              if (!employee.name) {
+                missing.push("Full Name");
+              }
+
+              if (!employee.email) {
+                missing.push("Email");
+              }
+
+              if (!employee.department) {
+                missing.push("Department");
+              }
+
+              if (!employee.position) {
+                missing.push("Position");
+              }
+
+              if (!employee.salary || Number(employee.salary) <= 0) {
+                missing.push("Salary");
+              }
+
+              if (!employee.joiningDate) {
+                missing.push("Joining Date");
+              }
+
+              if (!employee.loginId) {
+                missing.push("Login ID");
+              }
+
+              if (!employee.password) {
+                missing.push("Password");
+              }
+
+              return {
+                ...employee,
+                missing,
+              };
+            })
+            .filter((employee) => employee.missing.length > 0);
+
+          // ---------------------------------------------------------
+          // Show validation errors
+          // ---------------------------------------------------------
+          if (invalidRows.length > 0) {
+            console.table(
+              invalidRows.map((row) => ({
+                ExcelRow: row._row,
+                Name: row.name,
+                Email: row.email,
+                Department: row.department,
+                Position: row.position,
+                Salary: row.salary,
+                JoiningDate: row.joiningDate,
+                LoginID: row.loginId,
+                Password: row.password
+                  ? "Provided"
+                  : "MISSING",
+                Missing: row.missing.join(", "),
+              }))
+            );
+
+            // Count missing fields
+            const missingCounts = {};
+
+            invalidRows.forEach((row) => {
+              row.missing.forEach((field) => {
+                missingCounts[field] =
+                  (missingCounts[field] || 0) + 1;
+              });
+            });
+
+            console.log(
+              "MISSING FIELD COUNTS:",
+              missingCounts
+            );
+
+            const missingSummary = Object.entries(
+              missingCounts
+            )
+              .map(
+                ([field, count]) =>
+                  `${field}: ${count}`
+              )
+              .join(" | ");
+
+            toast.error(
+              `${invalidRows.length} rows invalid — ${missingSummary}`,
+              {
+                duration: 6000,
+              }
+            );
+
+            setBulkResult({
+              success: false,
+              message: `${invalidRows.length} rows need correction`,
+              errors: [
+                `Missing fields: ${missingSummary}`,
+                ...invalidRows
+                  .slice(0, 20)
+                  .map(
+                    (row) =>
+                      `Excel Row ${row._row}: Missing ${row.missing.join(
+                        ", "
+                      )}`
+                  ),
+              ],
+            });
+
+            return;
+          }
+
+          // Everything is valid
+          toast.success(
+            `${mapped.length} employees ready for upload`
+          );
+        } catch (error) {
+          console.error(
+            "Excel parsing error:",
+            error
+          );
+
+          toast.error(
+            "Failed to read Excel file. Please check the file format."
+          );
+
+          setParsedEmployees([]);
+          setBulkResult({
+            success: false,
+            message: "Failed to parse Excel file",
+            errors: [
+              error?.message ||
+                "Unknown Excel parsing error",
+            ],
+          });
+        }
+      };
+
+      reader.onerror = () => {
         toast.error("Failed to read Excel file");
-      }
+      };
+
+      reader.readAsArrayBuffer(file);
     };
-    reader.readAsArrayBuffer(file);
-  };
 
     const handleBulkUpload = async () => {
-      if (!parsedEmployees.length) {
-        toast.error("No employees found in the file");
-        return;
-      }
 
-      const invalid = parsedEmployees.filter(
-        (e) => !e.name || !e.email || !e.department || !e.position || !e.salary || !e.joiningDate || !e.loginId || !e.password
+    // ---------------------------------------------------------
+    // Validate every row and show exact row numbers
+    // ---------------------------------------------------------
+    const invalidRows = parsedEmployees
+      .map((employee) => {
+        const missing = [];
+
+        if (!employee.name) missing.push("Full Name");
+        if (!employee.email) missing.push("Email");
+        if (!employee.department) missing.push("Department");
+        if (!employee.position) missing.push("Position");
+        if (!employee.salary || Number(employee.salary) <= 0) {
+          missing.push("Salary");
+        }
+        if (!employee.joiningDate) missing.push("Joining Date");
+        if (!employee.loginId) missing.push("Login ID");
+        if (!employee.password) missing.push("Password");
+
+        return {
+          ...employee,
+          missing,
+        };
+      })
+      .filter((employee) => employee.missing.length > 0);
+
+    // ---------------------------------------------------------
+    // Stop before API if Excel has invalid rows
+    // ---------------------------------------------------------
+    if (invalidRows.length > 0) {
+      console.table(
+        invalidRows.map((row) => ({
+          ExcelRow: row._row,
+          Name: row.name,
+          Missing: row.missing.join(", "),
+        }))
       );
 
-      if (invalid.length) {
-        toast.error(`${invalid.length} rows have missing required fields`);
-        return;
-      }
+      toast.error(
+        `${invalidRows.length} rows have missing required fields`
+      );
 
-      setBulkLoading(true);
-      setBulkResult(null);
+      setBulkResult({
+        success: false,
+        message: `${invalidRows.length} rows need correction`,
+        errors: invalidRows.map(
+          (row) =>
+            `Excel Row ${row._row}: Missing ${row.missing.join(", ")}`
+        ),
+      });
 
-      try {
-        const payload = parsedEmployees.map(({ _row, ...rest }) => rest);
-        const res = await API.post("/employee/create/employee/batch", payload);
+      return;
+    }
 
-        const data = res.data;
-        setBulkResult({
-          success: true,
-          message: data.message || "Bulk upload successful",
-          summary: data.summary || {
-            total: payload.length,
-            success: data.count || 0,
-            failed: payload.length - (data.count || 0),
-            errors: data.summary?.errors || []
-          }
-        });
+    setBulkLoading(true);
+    setBulkResult(null);
 
-        toast.success(data.message || "Employees added successfully");
-        fetchEmployees();
-        setBulkFile(null);
-        setParsedEmployees([]);
-      } catch (err) {
-        const msg = err.response?.data?.message || "Bulk upload failed";
-        const errors = err.response?.data?.errors || err.response?.data?.summary?.errors || [];
-        setBulkResult({ success: false, message: msg, errors });
-        toast.error(msg);
-      } finally {
-        setBulkLoading(false);
-      }
-    };
+    try {
+      const payload = parsedEmployees.map(({ _row, ...employee }) => ({
+        ...employee,
+        salary: Number(employee.salary),
+      }));
+
+      console.log("Bulk upload payload:", payload);
+
+      const res = await API.post(
+        "/employee/create/employee/batch",
+        payload
+      );
+
+      const data = res.data;
+
+      const summary = data.summary || {
+        total: payload.length,
+        success: data.count || 0,
+        failed: payload.length - (data.count || 0),
+        errors: [],
+      };
+
+      setBulkResult({
+        success: true,
+        message: data.message || "Bulk upload successful",
+        summary,
+        errors: summary.errors || [],
+      });
+
+      toast.success(
+        data.message || "Employees added successfully"
+      );
+
+      await fetchEmployees();
+
+      setBulkFile(null);
+      setParsedEmployees([]);
+    } catch (err) {
+      console.error("Bulk upload error:", err);
+
+      const msg =
+        err.response?.data?.message ||
+        "Bulk upload failed";
+
+      const errors =
+        err.response?.data?.errors ||
+        err.response?.data?.summary?.errors ||
+        [];
+
+      setBulkResult({
+        success: false,
+        message: msg,
+        errors,
+      });
+
+      toast.error(msg);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
 
     const closeBulkModal = () => {
       setBulkOpen(false);
@@ -910,7 +1381,16 @@ const EmployeeManagement = () => {
                       <table className="w-full text-sm">
                         <thead className="bg-slate-50 sticky top-0">
                           <tr>
-                            {["Name", "Email", "Department", "Position", "Login ID"].map((h) => (
+                            {[
+                              "Name",
+                              "Email",
+                              "Department",
+                              "Position",
+                              "Salary",
+                              "Joining Date",
+                              "Login ID",
+                              "Password"
+                            ].map((h) => (
                               <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-slate-500">{h}</th>
                             ))}
                           </tr>
@@ -918,15 +1398,45 @@ const EmployeeManagement = () => {
                         <tbody className="divide-y divide-slate-100">
                           {parsedEmployees.slice(0, 8).map((emp, idx) => (
                             <tr key={idx} className="hover:bg-slate-50">
-                              <td className="px-3 py-2">{emp.name || <span className="text-red-500">Missing</span>}</td>
-                              <td className="px-3 py-2">{emp.email || <span className="text-red-500">Missing</span>}</td>
+                              <td className="px-3 py-2">
+                                {emp.name || <span className="text-red-500">Missing</span>}
+                              </td>
+
+                              <td className="px-3 py-2">
+                                {emp.email || <span className="text-red-500">Missing</span>}
+                              </td>
+
                               <td className="px-3 py-2">
                                 {deptName(emp.department) === "Unknown"
                                   ? <span className="text-red-500">Invalid</span>
                                   : deptName(emp.department)}
                               </td>
-                              <td className="px-3 py-2">{emp.position || <span className="text-red-500">Missing</span>}</td>
-                              <td className="px-3 py-2">{emp.loginId || <span className="text-red-500">Missing</span>}</td>
+
+                              <td className="px-3 py-2">
+                                {emp.position || <span className="text-red-500">Missing</span>}
+                              </td>
+
+                              <td className="px-3 py-2">
+                                {emp.salary > 0
+                                  ? `₹${emp.salary.toLocaleString()}`
+                                  : <span className="text-red-500">Missing</span>}
+                              </td>
+
+                              <td className="px-3 py-2">
+                                {emp.joiningDate
+                                  ? emp.joiningDate
+                                  : <span className="text-red-500">Missing</span>}
+                              </td>
+
+                              <td className="px-3 py-2">
+                                {emp.loginId || <span className="text-red-500">Missing</span>}
+                              </td>
+
+                              <td className="px-3 py-2">
+                                {emp.password
+                                  ? <span className="text-green-600">Provided</span>
+                                  : <span className="text-red-500">Missing</span>}
+                              </td>
                             </tr>
                           ))}
                         </tbody>

@@ -36,7 +36,7 @@ const EmployeeSettings = () => {
   const fetchEmployeeData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://ssinternsbacknedv2.onrender.com/api/employee/me", {
+      const res = await fetch("http://localhost:5000/api/employee/me", {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -113,7 +113,7 @@ const EmployeeSettings = () => {
     }
 
     try {
-      const res = await fetch("https://ssinternsbacknedv2.onrender.com/api/employee/me/change-password", {
+      const res = await fetch("http://localhost:5000/api/employee/me/change-password", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -145,7 +145,7 @@ const EmployeeSettings = () => {
     setProfileLoading(true);
 
     try {
-      const res = await fetch("https://ssinternsbacknedv2.onrender.com/api/employee/update-profile", {
+      const res = await fetch("http://localhost:5000/api/employee/update-profile", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

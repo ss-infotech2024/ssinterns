@@ -6,7 +6,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 const IST = "Asia/Kolkata";
-const API_BASE_URL = "https://ssinternsbacknedv2.onrender.com";
+const API_BASE_URL = "http://localhost:5000";
 
 const EmployeeData = () => {
   const [attendance, setAttendance] = useState([]);
