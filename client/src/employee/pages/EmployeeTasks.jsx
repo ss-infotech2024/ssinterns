@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
-const API_BASE = "http://localhost:5000/api/employee";
+const API_BASE = "https://ssinternsbacknedv2.onrender.com/api/employee";
 
 const EmployeeTasks = () => {
   const [tasks, setTasks] = useState([]);

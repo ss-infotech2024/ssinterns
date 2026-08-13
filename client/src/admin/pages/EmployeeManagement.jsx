@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://ssinternsbacknedv2.onrender.com/api",
   timeout: 10000,
 });
 API.interceptors.request.use((config) => {

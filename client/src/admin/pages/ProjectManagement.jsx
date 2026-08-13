@@ -3,7 +3,7 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://ssinternsbacknedv2.onrender.com/api",
 });
 
 // Add token to every request

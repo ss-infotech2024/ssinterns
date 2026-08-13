@@ -32,7 +32,7 @@ const courseAPI = {
       }
 
       console.log('Fetching courses from API...');
-      const response = await fetch('http://localhost:5000/api/courses', {
+      const response = await fetch('https://ssinternsbacknedv2.onrender.com/api/courses', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -76,7 +76,7 @@ const courseAPI = {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch('http://localhost:5000/api/courses', {
+      const response = await fetch('https://ssinternsbacknedv2.onrender.com/api/courses', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -116,7 +116,7 @@ const courseAPI = {
 
   updateCourse: async (courseId, courseData) => {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
+    const response = await fetch(`https://ssinternsbacknedv2.onrender.com/api/courses/${courseId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -135,7 +135,7 @@ const courseAPI = {
 
   deleteCourse: async (courseId) => {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
+    const response = await fetch(`https://ssinternsbacknedv2.onrender.com/api/courses/${courseId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -152,7 +152,7 @@ const courseAPI = {
 
   addStudent: async (courseId, studentData) => {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`http://localhost:5000/api/courses/${courseId}/students`, {
+    const response = await fetch(`https://ssinternsbacknedv2.onrender.com/api/courses/${courseId}/students`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -171,7 +171,7 @@ const courseAPI = {
 
   updateStudent: async (courseId, studentId, studentData) => {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`http://localhost:5000/api/courses/${courseId}/students/${studentId}`, {
+    const response = await fetch(`https://ssinternsbacknedv2.onrender.com/api/courses/${courseId}/students/${studentId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -190,7 +190,7 @@ const courseAPI = {
 
   deleteStudent: async (courseId, studentId) => {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`http://localhost:5000/api/courses/${courseId}/students/${studentId}`, {
+    const response = await fetch(`https://ssinternsbacknedv2.onrender.com/api/courses/${courseId}/students/${studentId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -207,7 +207,7 @@ const courseAPI = {
 
   updateReminder: async (courseId, studentId, reminderMessage) => {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`http://localhost:5000/api/courses/${courseId}/students/${studentId}/reminder`, {
+    const response = await fetch(`https://ssinternsbacknedv2.onrender.com/api/courses/${courseId}/students/${studentId}/reminder`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -388,7 +388,7 @@ const ErrorDisplay = ({ error, onRetry, onLogin }) => (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
             <p><strong>Server Connection Issue:</strong></p>
             <p>• Check if backend server is running on port 5000</p>
-            <p>• Verify API endpoint: http://localhost:5000/api/courses</p>
+            <p>• Verify API endpoint: https://ssinternsbacknedv2.onrender.com/api/courses</p>
             <p>• Check console for detailed error messages</p>
           </div>
         )}
