@@ -262,6 +262,103 @@ export const createEmployee = async (req, res) => {
 
 
 // ---------------------------------------------------------------------
+// INTERN SELF-REGISTRATION (via QR invite)
+// ---------------------------------------------------------------------
+const INTERN_INVITE_PURPOSE = "intern-invite";
+const INTERN_INVITE_TTL = "7d";
+// Department ids used by the admin panel (client DEPARTMENTS list)
+const VALID_DEPARTMENTS = [1, 2, 3, 4, 5, 6];
+
+// Admin-only: issue a signed, expiring invite token to embed in the QR.
+// The token has no `id`, so it can never pass protect / protectEmployee.
+export const createInternInvite = async (req, res) => {
+  try {
+    const token = jwt.sign(
+      { purpose: INTERN_INVITE_PURPOSE, issuedBy: String(req.user._id) },
+      process.env.JWT_SECRET,
+      { expiresIn: INTERN_INVITE_TTL }
+    );
+    const { exp } = jwt.decode(token);
+    res.json({ success: true, token, expiresAt: new Date(exp * 1000) });
+  } catch (err) {
+    console.error("Create intern invite error:", err);
+    res.status(500).json({ success: false, message: "Could not create invite" });
+  }
+};
+
+// Public, but requires a valid invite. Only the intern's own details are
+// accepted — type, salary and status are fixed here, not taken from the body.
+export const selfRegisterIntern = async (req, res) => {
+  const { invite, name, email, phone, department, position, joiningDate, loginId, password } = req.body;
+
+  try {
+    const decoded = jwt.verify(invite || "", process.env.JWT_SECRET);
+    if (decoded.purpose !== INTERN_INVITE_PURPOSE) throw new Error("wrong purpose");
+  } catch {
+    return res.status(401).json({
+      success: false,
+      message: "This registration link is invalid or has expired. Please ask the admin for a new QR code."
+    });
+  }
+
+  const dept = Number(department);
+  if (!name?.trim() || !email?.trim() || !loginId?.trim() || !password) {
+    return res.status(400).json({ success: false, message: "Name, email, login ID and password are required" });
+  }
+  if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+    return res.status(400).json({ success: false, message: "Please enter a valid email" });
+  }
+  if (!VALID_DEPARTMENTS.includes(dept)) {
+    return res.status(400).json({ success: false, message: "Please select a department" });
+  }
+  if (String(password).length < 6) {
+    return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+  }
+  const joinDate = joiningDate ? new Date(joiningDate) : new Date();
+  if (isNaN(joinDate.getTime())) {
+    return res.status(400).json({ success: false, message: "Invalid joining date" });
+  }
+
+  try {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanLoginId = loginId.trim();
+    const existing = await Employee.findOne({ $or: [{ email: cleanEmail }, { loginId: cleanLoginId }] });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "Email or Login ID already exists" });
+    }
+
+    const employee = await Employee.create({
+      name: name.trim(),
+      email: cleanEmail,
+      phone: phone?.trim(),
+      department: dept,
+      position: position?.trim() || "Intern",
+      salary: 0,
+      joiningDate: joinDate,
+      status: "Active",
+      employeeType: "Intern",
+      loginId: cleanLoginId,
+      password: encryptPassword(String(password)),
+      pendingSalary: 0,
+      paidSalary: 0,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      employee: { name: employee.name, email: employee.email, loginId: employee.loginId }
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: "Email or Login ID already exists" });
+    }
+    console.error("Intern self-register error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+// ---------------------------------------------------------------------
 // BATCH CREATE EMPLOYEES (Multiple at once)
 // ---------------------------------------------------------------------
 export const batchCreateEmployees = async (req, res) => {

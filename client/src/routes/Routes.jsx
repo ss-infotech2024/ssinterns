@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLogin from "../pages/AdminLogin";
 import EmployeeLogin from "../pages/EmployeeLogin";
 import StudentForm from "../pages/StudentForm";
+import InternRegister from "../pages/InternRegister";
 import DashboardAdmin from "../admin/components/DashboardAdmin";
 import DashboardEmployee from "../employee/components/DashboardEmployee";
 import EmployeeTasks from "../employee/pages/EmployeeTasks";
@@ -71,6 +72,7 @@ const AppRoutes = () => (
     />
     
     <Route path="/student-form" element={<StudentForm />} />
+    <Route path="/intern/register" element={<InternRegister />} />
     
     {/* Admin routes */}
     <Route 

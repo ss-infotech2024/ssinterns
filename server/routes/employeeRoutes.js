@@ -4,14 +4,19 @@ import {
   login, resetPassword, changePassword, getEmployeePassword,
   getTasks, addTask, updateTask, deleteTask, getEmployeeTasks, getEmployeeAttendance, getEmployeePerformance,
   getEmployeeById, getCurrentEmployee, updateProfile,updateTaskByEmployee,getEmployeeWithTasks,getMyTasks,
-  batchCreateEmployees
+  batchCreateEmployees, createInternInvite, selfRegisterIntern
 } from "../controllers/employeeController.js";
 import { protectEmployee } from "../middleware/authEmployee.js";
+import { protect, adminOnly } from "../middleware/auth.js";
 
 const router = Router();
 
 // PUBLIC ROUTES - NO PROTECTION
 router.post("/login", login);
+router.post("/register/intern", selfRegisterIntern); // needs a valid QR invite token
+
+// Admin issues the QR invite token
+router.post("/intern-invite", protect, adminOnly, createInternInvite);
 
 // EMPLOYEE ROUTES - NO PROTECTION
 router.get("/me",protectEmployee, getCurrentEmployee);

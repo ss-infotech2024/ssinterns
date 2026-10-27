@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import { QRCodeCanvas } from "qrcode.react";
+import { DEPARTMENTS } from "../../constants/departments";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 const API = axios.create({
@@ -23,14 +25,6 @@ const calcPerformance = (tasks = [], attendance = 0) => {
   return Math.round(taskScore * 0.6 + attendance * 0.4);
 };
 
-const DEPARTMENTS = [
-  { id: 1, name: "Sales",       color: "bg-blue-100 text-blue-800" },
-  { id: 2, name: "Marketing",   color: "bg-purple-100 text-purple-800" },
-  { id: 3, name: "Development", color: "bg-green-100 text-green-800" },
-  { id: 4, name: "HR",          color: "bg-pink-100 text-pink-800" },
-  { id: 5, name: "Finance",     color: "bg-yellow-100 text-yellow-800" },
-  { id: 6, name: "Operations",  color: "bg-indigo-100 text-indigo-800" },
-];
 
 const deptColor  = (id) => DEPARTMENTS.find((d) => d.id === id)?.color || "bg-gray-100 text-gray-800";
 const deptName   = (id) => DEPARTMENTS.find((d) => d.id === id)?.name  || "Unknown";
@@ -48,6 +42,7 @@ const Icon = ({ d, cls = "w-5 h-5" }) => (
   </svg>
 );
 
+const IQr      = () => <Icon d={["M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z", "M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"]} />;
 const IUpload   = () => <Icon d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />;
 const IDownload = () => <Icon d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />;
 const IUser      = () => <Icon d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />;
@@ -140,6 +135,9 @@ const EmployeeManagement = () => {
   const [editOpen,      setEditOpen]      = useState(false);
   const [credsOpen,     setCredsOpen]     = useState(false);
   const [newCreds,      setNewCreds]      = useState(null);
+  const [qrOpen,        setQrOpen]        = useState(false);
+  const [invite,        setInvite]        = useState(null);  // { token, expiresAt }
+  const [inviteLoading, setInviteLoading] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkFile, setBulkFile] = useState(null);
   const [parsedEmployees, setParsedEmployees] = useState([]);
@@ -291,6 +289,41 @@ const EmployeeManagement = () => {
     const totalSalary = merged.reduce((s, e) => s + (e.salary || 0), 0);
     return { total, active, interns, avgPerf, totalSalary };
   }, [merged]);
+
+  // ── Intern self-registration QR ──────────────────────────────────────────────
+  const inviteLink = invite ? `${window.location.origin}/intern/register?invite=${encodeURIComponent(invite.token)}` : "";
+
+  const generateInvite = async () => {
+    setInviteLoading(true);
+    try {
+      const res = await API.post("/employee/intern-invite");
+      setInvite({ token: res.data.token, expiresAt: res.data.expiresAt });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not generate QR code");
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const openInternQr = () => {
+    setQrOpen(true);
+    // Reuse the current invite until it is close to expiring
+    if (!invite || new Date(invite.expiresAt) - Date.now() < 60 * 60 * 1000) generateInvite();
+  };
+
+  const closeInternQr = () => {
+    setQrOpen(false);
+    fetchEmployees(); // pick up anyone who registered while the QR was shown
+  };
+
+  const downloadQr = () => {
+    const canvas = document.getElementById("intern-register-qr");
+    if (!canvas) return;
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = "intern-registration-qr.png";
+    a.click();
+  };
 
   // ── CRUD ─────────────────────────────────────────────────────────────────────
   const handleAdd = async (e) => {
@@ -1006,6 +1039,13 @@ const EmployeeManagement = () => {
                 </button>
 
                 <button
+                  onClick={openInternQr}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition shadow-sm"
+                >
+                  <IQr /> Intern QR
+                </button>
+
+                <button
                   onClick={() => setAddOpen(true)}
                   className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition shadow-sm"
                 >
@@ -1229,6 +1269,61 @@ const EmployeeManagement = () => {
           <ModalFooter onCancel={() => setAddOpen(false)} submitLabel="Create Employee" />
         </form>
       </Modal>
+
+      {/* ══ Intern QR Modal ═════════════════════════════════════════════════════ */}
+      {qrOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center px-5 py-3.5 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-800">Intern Self-Registration</h3>
+              <button onClick={closeInternQr} className="text-slate-400 hover:text-slate-700 transition" aria-label="Close"><IClose /></button>
+            </div>
+            <div className="p-5 text-center">
+              <p className="text-sm text-slate-500 mb-4">
+                Interns scan this QR and fill in their own details. The link opens only the registration form — nothing else in the portal.
+              </p>
+              <div className="inline-flex items-center justify-center w-[232px] h-[232px] rounded-xl border border-slate-200 bg-white p-3">
+                {inviteLoading || !invite ? (
+                  <span className="inline-block w-6 h-6 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+                ) : (
+                  <QRCodeCanvas id="intern-register-qr" value={inviteLink} size={208} marginSize={1} />
+                )}
+              </div>
+              {invite && !inviteLoading && (
+                <p className="text-xs text-slate-400 mt-2">
+                  Valid until {new Date(invite.expiresAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                </p>
+              )}
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                <button
+                  disabled={!invite || inviteLoading}
+                  onClick={() => { navigator.clipboard.writeText(inviteLink); toast.success("Link copied!"); }}
+                  className="py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 transition disabled:opacity-50"
+                >
+                  Copy link
+                </button>
+                <button
+                  disabled={!invite || inviteLoading}
+                  onClick={downloadQr}
+                  className="py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 transition disabled:opacity-50"
+                >
+                  Download
+                </button>
+                <button
+                  disabled={inviteLoading}
+                  onClick={generateInvite}
+                  className="py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 transition disabled:opacity-50"
+                >
+                  New QR
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 mt-4 text-left">
+                Registered interns are added as <span className="font-medium">Intern</span> with salary ₹0 — set the salary from Edit afterwards.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══ Edit Modal ══════════════════════════════════════════════════════════ */}
       <Modal open={editOpen && !!selectedEmp} onClose={() => { setEditOpen(false); setSelectedEmp(null); }} title="Edit Employee">
