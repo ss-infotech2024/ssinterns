@@ -150,7 +150,7 @@ const Shimmer = ({ className = "" }) => (
    SKELETON COMPONENTS - Mirrors exact visual structure
 ───────────────────────────────────────────────────────────────────────────── */
 const SkeletonTaskDetails = () => (
-    <td className="px-6 py-4">
+    <td className="px-4 py-3">
         <div className="flex items-center gap-2 mb-3">
             <Shimmer className="h-5 w-20 rounded-md" />
             <Shimmer className="h-5 w-14 rounded-full" />
@@ -162,7 +162,7 @@ const SkeletonTaskDetails = () => (
 );
 
 const SkeletonEmployee = () => (
-    <td className="px-6 py-4">
+    <td className="px-4 py-3">
         <div className="flex items-center gap-3 mb-3">
             <Shimmer className="w-9 h-9 rounded-full flex-shrink-0" />
             <div className="flex-1 space-y-1.5">
@@ -178,7 +178,7 @@ const SkeletonEmployee = () => (
 );
 
 const SkeletonStatusPriority = () => (
-    <td className="px-6 py-4">
+    <td className="px-4 py-3">
         <div className="space-y-2.5">
             <Shimmer className="h-6 w-24 rounded-full" />
             <Shimmer className="h-6 w-20 rounded-full" />
@@ -187,7 +187,7 @@ const SkeletonStatusPriority = () => (
 );
 
 const SkeletonProgress = () => (
-    <td className="px-6 py-4">
+    <td className="px-4 py-3">
         <div className="flex items-center gap-2 mb-1.5">
             <Shimmer className="h-2 w-24 rounded-full" />
             <Shimmer className="h-3.5 w-8 rounded" />
@@ -197,7 +197,7 @@ const SkeletonProgress = () => (
 );
 
 const SkeletonDates = () => (
-    <td className="px-6 py-4">
+    <td className="px-4 py-3">
         <div className="space-y-2">
             <Shimmer className="h-3 w-28 rounded" />
             <Shimmer className="h-3 w-24 rounded" />
@@ -207,7 +207,7 @@ const SkeletonDates = () => (
 );
 
 const SkeletonActions = () => (
-    <td className="px-6 py-4">
+    <td className="px-4 py-3">
         <Shimmer className="h-7 w-7 rounded-lg" />
     </td>
 );
@@ -604,14 +604,14 @@ export default function TaskAdmin() {
             {/* Task Details Modal */}
             {showTaskDetails && selectedTask && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-3.5 flex justify-between items-center">
                             <h3 className="text-lg font-semibold text-gray-800">Task Details</h3>
                             <button onClick={() => setShowTaskDetails(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
                                 <X className="w-5 h-5 text-gray-400" />
                             </button>
                         </div>
-                        <div className="p-6 space-y-5">
+                        <div className="p-5 space-y-4">
                             <div className="grid grid-cols-2 gap-5">
                                 <div>
                                     <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Title</p>
@@ -678,7 +678,7 @@ export default function TaskAdmin() {
                                 </div>
                             )}
                         </div>
-                        <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
+                        <div className="px-5 py-3.5 border-t border-gray-100 flex justify-end">
                             <button onClick={() => setShowTaskDetails(false)} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100">
                                 Close
                             </button>
@@ -690,14 +690,14 @@ export default function TaskAdmin() {
             {/* Add Task Modal */}
             {showAddTask && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-                        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-3.5 flex justify-between items-center">
                             <h3 className="text-lg font-semibold text-gray-800">Add New Task</h3>
                             <button onClick={() => setShowAddTask(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
                                 <X className="w-5 h-5 text-gray-400" />
                             </button>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <div className="p-5 space-y-4">
                             <input
                                 type="text"
                                 placeholder="Task Title *"
@@ -770,7 +770,7 @@ export default function TaskAdmin() {
                                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
                             />
                         </div>
-                        <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+                        <div className="px-5 py-3.5 border-t border-gray-100 flex justify-end gap-3">
                             <button onClick={() => setShowAddTask(false)} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100">
                                 Cancel
                             </button>
@@ -783,18 +783,13 @@ export default function TaskAdmin() {
             )}
             
             {/* Main Content */}
-            <div className="min-h-screen bg-gray-50/60 p-6">
-                <div className="max-w-7xl mx-auto space-y-6">
+            <div className="w-full">
+                <div className="w-full space-y-5">
                     {/* Header */}
-                    <div className="flex justify-between items-start flex-wrap gap-4">
+                    <div className="admin-page-header">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
-                                <span className="p-2 bg-violet-100 rounded-xl">
-                                    <FileText className="w-5 h-5 text-violet-600" />
-                                </span>
-                                Task Administration
-                            </h1>
-                            <p className="text-sm text-gray-500 mt-1">{tasks.length} tasks loaded</p>
+                            <h1 className="admin-page-title">Task Administration</h1>
+                            <p className="admin-page-subtitle">{tasks.length} tasks loaded</p>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                             <button
@@ -844,31 +839,31 @@ export default function TaskAdmin() {
                         ) : (
                             <>
                                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                                    <div className="text-2xl font-bold text-violet-600">{stats.total}</div>
+                                    <div className="text-xl font-semibold text-violet-600">{stats.total}</div>
                                     <div className="text-xs text-gray-500">Total</div>
                                 </div>
                                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                                    <div className="text-2xl font-bold text-emerald-600">{stats.completed}</div>
+                                    <div className="text-xl font-semibold text-emerald-600">{stats.completed}</div>
                                     <div className="text-xs text-gray-500">Completed</div>
                                 </div>
                                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                                    <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
+                                    <div className="text-xl font-semibold text-blue-600">{stats.inProgress}</div>
                                     <div className="text-xs text-gray-500">In Progress</div>
                                 </div>
                                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                                    <div className="text-2xl font-bold text-amber-600">{stats.pending}</div>
+                                    <div className="text-xl font-semibold text-amber-600">{stats.pending}</div>
                                     <div className="text-xs text-gray-500">Pending</div>
                                 </div>
                                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                                    <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
+                                    <div className="text-xl font-semibold text-red-600">{stats.overdue}</div>
                                     <div className="text-xs text-gray-500">Overdue</div>
                                 </div>
                                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                                    <div className="text-2xl font-bold text-teal-600">{stats.today}</div>
+                                    <div className="text-xl font-semibold text-teal-600">{stats.today}</div>
                                     <div className="text-xs text-gray-500">Today</div>
                                 </div>
                                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                                    <div className="text-2xl font-bold text-indigo-600">{stats.thisWeek}</div>
+                                    <div className="text-xl font-semibold text-indigo-600">{stats.thisWeek}</div>
                                     <div className="text-xs text-gray-500">This Week</div>
                                 </div>
                             </>
@@ -876,7 +871,7 @@ export default function TaskAdmin() {
                     </div>
                     
                     {/* Filters */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Filter className="w-4 h-4 text-gray-400" />
@@ -979,9 +974,9 @@ export default function TaskAdmin() {
                     </div>
                     
                     {/* Tasks Table */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                         {error ? (
-                            <div className="p-12 text-center">
+                            <div className="p-8 text-center">
                                 <AlertCircle className="w-10 h-10 text-red-300 mx-auto mb-3" />
                                 <p className="font-semibold text-gray-700">Failed to load tasks</p>
                                 <p className="text-sm text-gray-400 mt-1">{error}</p>
@@ -995,7 +990,7 @@ export default function TaskAdmin() {
                                     <thead className="border-b border-gray-100 bg-gray-50/80">
                                         <tr>
                                             {["Task Details", "Employee", "Status & Priority", "Progress", "Dates", "Actions"].map(header => (
-                                                <th key={header} className="px-6 py-3.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                                                <th key={header} className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                                                     {header}
                                                 </th>
                                             ))}
@@ -1014,7 +1009,7 @@ export default function TaskAdmin() {
                                             
                                             return (
                                                 <tr key={task._id} className={`border-b border-gray-50 hover:bg-gray-50/70 ${isOverdue ? "bg-red-50/40" : isToday ? "bg-blue-50/30" : ""}`}>
-                                                    <td className="px-6 py-4 max-w-xs">
+                                                    <td className="px-4 py-3 max-w-xs">
                                                         <div className="flex flex-wrap items-center gap-1.5 mb-2">
                                                             <span className="text-[11px] font-mono bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">
                                                                 #{task._id?.slice(-8)}
@@ -1036,7 +1031,7 @@ export default function TaskAdmin() {
                                                         )}
                                                     </td>
                                                     
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         {task.employeeId ? (
                                                             <>
                                                                 <div className="flex items-center gap-2.5 mb-2.5">
@@ -1069,7 +1064,7 @@ export default function TaskAdmin() {
                                                         )}
                                                     </td>
                                                     
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         <div className="space-y-2">
                                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${STATUS_COLORS[task.status?.toLowerCase()]}`}>
                                                                 {STATUS_ICONS[task.status?.toLowerCase()]} {cap(task.status)}
@@ -1081,7 +1076,7 @@ export default function TaskAdmin() {
                                                         </div>
                                                     </td>
                                                     
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         <div className="flex items-center gap-2 mb-1.5">
                                                             <div className="w-20 bg-gray-100 rounded-full h-2">
                                                                 <div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${task.progress || 0}%` }} />
@@ -1093,7 +1088,7 @@ export default function TaskAdmin() {
                                                         )}
                                                     </td>
                                                     
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         <div className="space-y-1.5 text-[11px] text-gray-500">
                                                             <div className={`flex items-center gap-1 ${isOverdue ? "text-red-600 font-semibold" : ""}`}>
                                                                 <Calendar className="w-3 h-3" /> Due: {fmt(task.dueDate)}
@@ -1103,7 +1098,7 @@ export default function TaskAdmin() {
                                                         </div>
                                                     </td>
                                                     
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         <div className="relative">
                                                             <button
                                                                 onClick={() => setActiveDropdown(activeDropdown === task._id ? null : task._id)}
@@ -1149,7 +1144,7 @@ export default function TaskAdmin() {
                                             <tr>
                                                 <td colSpan={6} className="text-center py-20">
                                                     <div className="flex flex-col items-center gap-3">
-                                                        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                                                        <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center">
                                                             <FileText className="w-8 h-8 text-gray-300" />
                                                         </div>
                                                         <p className="font-semibold text-gray-600">No tasks found</p>

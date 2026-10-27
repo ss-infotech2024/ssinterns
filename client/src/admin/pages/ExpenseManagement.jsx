@@ -113,10 +113,10 @@ export default function AdminExpenseDashboard() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold">Access Denied</h1>
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-lg font-semibold">Access Denied</h1>
           <p className="text-gray-600">Admin login required</p>
         </div>
       </div>
@@ -126,59 +126,59 @@ export default function AdminExpenseDashboard() {
   return (
     <>
       <Toaster position="top-right" />
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto p-6">
+      <div className="w-full">
+        <div className="w-full">
 
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Expense Dashboard</h1>
-            <p className="text-gray-600 mt-1">Review, approve, pay or reject employee expense claims</p>
+          <div className="mb-5">
+            <h1 className="admin-page-title">Admin Expense Dashboard</h1>
+            <p className="admin-page-subtitle">Review, approve, pay or reject employee expense claims</p>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
             {tabs.map((tab, i) => (
-              <div key={i} className="bg-white border p-6">
-                <p className="text-sm text-gray-600">{tab.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{tab.count}</p>
+              <div key={i} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <p className="text-xs font-medium text-gray-500">{tab.label}</p>
+                <p className="text-xl font-bold text-gray-900 mt-1">{tab.count}</p>
               </div>
             ))}
           </div>
 
           {/* Filters & Actions */}
-          <div className="bg-white border mb-6 p-6">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-4 p-4">
             <div className="flex flex-col lg:flex-row gap-4 justify-between">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search employee, category, description..."
                     value={searchTerm}
                     onChange={e => { setSearchTerm(e.target.value); setPage(0); }}
-                    className="pl-10 pr-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                    className="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 w-64"
                   />
                 </div>
               </div>
               <button
                 onClick={fetchExpenses}
-                className="px-6 py-3 border hover:bg-gray-50 flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
               >
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="bg-white border mb-6">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-4 overflow-hidden">
             <div className="flex overflow-x-auto">
               {tabs.map((tab, i) => (
                 <button
                   key={i}
                   onClick={() => { setSelectedTab(i); setPage(0); }}
-                  className={`px-8 py-4 font-medium border-b-2 transition ${selectedTab === i
-                      ? 'border-blue-600 text-blue-600 bg-blue-50'
+                  className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition ${selectedTab === i
+                      ? 'border-violet-600 text-violet-700 bg-violet-50'
                       : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                 >
@@ -189,91 +189,91 @@ export default function AdminExpenseDashboard() {
           </div>
 
           {/* Table */}
-          <div className="bg-white border">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             {loading && expenses.length === 0 ? (
-              <div className="p-12 text-center">
+              <div className="p-8 text-center">
                 <RefreshCw className="w-10 h-10 text-gray-400 animate-spin mx-auto" />
                 <p className="mt-4 text-gray-600">Loading expenses...</p>
               </div>
             ) : paginated.length === 0 ? (
-              <div className="p-12 text-center text-gray-500">
-                <FileText className="w-20 h-20 mx-auto mb-4 text-gray-300" />
-                <p className="text-xl">No expenses found</p>
+              <div className="p-8 text-center text-gray-500">
+                <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-sm font-medium text-gray-600">No expenses found</p>
               </div>
             ) : (
               <>
                 <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
+                  <thead className="bg-gray-50 border-b text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
-                      <th className="text-left p-4 font-medium text-gray-700">Employee</th>
-                      <th className="text-left p-4 font-medium text-gray-700">Category</th>
-                      <th className="text-left p-4 font-medium text-gray-700">Amount</th>
-                      <th className="text-left p-4 font-medium text-gray-700">Date</th>
-                      <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                      <th className="text-left p-4 font-medium text-gray-700">Receipt</th>
-                      <th className="text-center p-4 font-medium text-gray-700">Actions</th>
+                      <th className="text-left px-4 py-2.5 font-semibold">Employee</th>
+                      <th className="text-left px-4 py-2.5 font-semibold">Category</th>
+                      <th className="text-left px-4 py-2.5 font-semibold">Amount</th>
+                      <th className="text-left px-4 py-2.5 font-semibold">Date</th>
+                      <th className="text-left px-4 py-2.5 font-semibold">Status</th>
+                      <th className="text-left px-4 py-2.5 font-semibold">Receipt</th>
+                      <th className="text-center px-4 py-2.5 font-semibold">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 text-sm">
                     {paginated.map(exp => (
                       <tr key={exp._id} className="hover:bg-gray-50">
-                        <td className="p-4">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-200 border-2 border-dashed rounded-full flex items-center justify-center">
-                              <User className="w-5 h-5 text-gray-500" />
+                            <div className="w-8 h-8 bg-gray-100 rounded-full shrink-0 flex items-center justify-center">
+                              <User className="w-4 h-4 text-gray-500" />
                             </div>
                             <div>
                               <div className="font-medium text-gray-900">{exp.employeeName}</div>
-                              <div className="text-sm text-gray-500">{exp.department || '—'}</div>
+                              <div className="text-xs text-gray-500">{exp.department || '—'}</div>
                             </div>
                           </div>
                         </td>
-                        <td className="p-4 text-gray-700">{exp.category}</td>
-                        <td className="p-4 font-medium text-purple-700">
+                        <td className="px-4 py-3 text-gray-700">{exp.category}</td>
+                        <td className="px-4 py-3 font-medium text-purple-700">
                           ₹{exp.amount.toLocaleString('en-IN')}
                         </td>
-                        <td className="p-4 text-gray-700">
+                        <td className="px-4 py-3 text-gray-700">
                           {format(new Date(exp.date), 'dd MMM yyyy')}
                         </td>
-                        <td className="p-4">
+                        <td className="px-4 py-3">
                           <span className={getStatusBadge(exp.status)}>
                             {exp.status.charAt(0).toUpperCase() + exp.status.slice(1)}
                           </span>
                         </td>
-                        <td className="p-4">
+                        <td className="px-4 py-3">
                           {exp.receipt ? (
                             <a href={exp.receipt} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
                               <Download className="w-5 h-5" />
                             </a>
                           ) : '—'}
                         </td>
-                        <td className="p-4 text-center">
-                          <div className="flex justify-center gap-4">
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center gap-1">
                             {exp.status === 'pending' && (
                               <>
                                 <button
                                   onClick={() => updateStatus(exp._id, 'approved')}
-                                  className="text-green-600 hover:bg-green-50 p-2 rounded"
+                                  className="text-green-600 hover:bg-green-50 p-1.5 rounded-md"
                                   title="Approve"
                                 >
-                                  <CheckCircle className="w-6 h-6" />
+                                  <CheckCircle className="w-5 h-5" />
                                 </button>
                                 <button
                                   onClick={() => setRejectDialog({ open: true, expense: exp })}
-                                  className="text-red-600 hover:bg-red-50 p-2 rounded"
+                                  className="text-red-600 hover:bg-red-50 p-1.5 rounded-md"
                                   title="Reject"
                                 >
-                                  <XCircle className="w-6 h-6" />
+                                  <XCircle className="w-5 h-5" />
                                 </button>
                               </>
                             )}
                             {exp.status === 'approved' && (
                               <button
                                 onClick={() => updateStatus(exp._id, 'paid')}
-                                className="text-blue-600 hover:bg-blue-50 p-2 rounded"
+                                className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-md"
                                 title="Mark as Paid"
                               >
-                                <IndianRupee className="w-6 h-6" />
+                                <IndianRupee className="w-5 h-5" />
                               </button>
                             )}
                           </div>
@@ -292,14 +292,14 @@ export default function AdminExpenseDashboard() {
                     <button
                       onClick={() => setPage(p => Math.max(0, p - 1))}
                       disabled={page === 0}
-                      className="px-4 py-2 border hover:bg-gray-100 disabled:opacity-50"
+                      className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => setPage(p => p + 1)}
                       disabled={page >= Math.ceil(filtered.length / rowsPerPage) - 1}
-                      className="px-4 py-2 border hover:bg-gray-100 disabled:opacity-50"
+                      className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50"
                     >
                       Next
                     </button>
@@ -311,12 +311,12 @@ export default function AdminExpenseDashboard() {
 
           {/* Reject Dialog */}
           {rejectDialog.open && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-              <div className="bg-white border max-w-md w-full p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-semibold">Reject Expense</h3>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-5">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-5">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Reject Expense</h3>
                   <button onClick={() => { setRejectDialog({ open: false, expense: null }); setRejectionReason(''); }}>
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
                 <div className="space-y-2 text-sm text-gray-700 mb-4">
@@ -329,12 +329,12 @@ export default function AdminExpenseDashboard() {
                   value={rejectionReason}
                   onChange={e => setRejectionReason(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
                 />
-                <div className="flex justify-end gap-4 mt-6">
+                <div className="flex justify-end gap-2 mt-4">
                   <button
                     onClick={() => { setRejectDialog({ open: false, expense: null }); setRejectionReason(''); }}
-                    className="px-6 py-3 border hover:bg-gray-50"
+                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
                   >
                     Cancel
                   </button>
@@ -345,7 +345,7 @@ export default function AdminExpenseDashboard() {
                       setRejectionReason('');
                     }}
                     disabled={!rejectionReason.trim()}
-                    className="px-8 py-3 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                    className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                   >
                     Reject Expense
                   </button>

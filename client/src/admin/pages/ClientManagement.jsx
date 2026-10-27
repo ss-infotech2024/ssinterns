@@ -38,7 +38,7 @@ const DeleteIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-const CloseIcon = ({ className = "w-6 h-6" }) => (
+const CloseIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
@@ -54,10 +54,10 @@ const ClientManagement = () => {
   const token = localStorage.getItem("adminToken");
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-xl">Admin login required</p>
+          <h1 className="text-lg font-semibold text-red-600 mb-1">Access Denied</h1>
+          <p className="text-sm text-gray-600">Admin login required</p>
         </div>
       </div>
     );
@@ -199,19 +199,28 @@ const ClientManagement = () => {
     return map[status] || "text-gray-600 bg-gray-50 border-gray-200";
   };
 
+  const statAccent = {
+    blue: { border: "border-l-blue-500", text: "text-blue-600" },
+    green: { border: "border-l-green-500", text: "text-green-600" },
+    purple: { border: "border-l-purple-500", text: "text-purple-600" },
+    orange: { border: "border-l-orange-500", text: "text-orange-600" },
+    teal: { border: "border-l-teal-500", text: "text-teal-600" },
+    pink: { border: "border-l-pink-500", text: "text-pink-600" },
+  };
+
   const formatDate = (date) => date ? new Date(date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "Not set";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full">
+      <div className="w-full">
 
         {/* Header & Stats */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Client Management</h1>
-          <p className="text-gray-600 text-lg">Manage all clients, projects & revenue</p>
+        <div className="mb-5">
+          <h1 className="admin-page-title">Client Management</h1>
+          <p className="admin-page-subtitle">Manage all clients, projects & revenue</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-5">
           {[
             { label: "Total Clients", value: stats.total, color: "blue" },
             { label: "Active", value: stats.active, color: "green" },
@@ -220,86 +229,86 @@ const ClientManagement = () => {
             { label: "Total Projects", value: stats.totalProjects, color: "teal" },
             { label: "Avg Projects", value: stats.avgProjects, color: "pink" },
           ].map((stat, i) => (
-            <div key={i} className={`bg-white rounded-2xl shadow-lg p-5 border-l-4 border-${stat.color}-500`}>
+            <div key={i} className={`bg-white rounded-lg shadow-sm border border-gray-200 border-l-4 p-4 ${statAccent[stat.color].border}`}>
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-gray-600 text-xs font-medium">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-800 mt-1">{stat.value}</p>
+                  <p className="text-xl font-bold text-gray-800 mt-1">{stat.value}</p>
                 </div>
-                <ChartIcon className={`text-${stat.color}-600`} />
+                <ChartIcon className={`w-6 h-6 shrink-0 ${statAccent[stat.color].text}`} />
               </div>
             </div>
           ))}
         </div>
 
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">{error}</div>}
+        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">{error}</div>}
 
         {/* Table */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-6 border-b flex flex-col lg:flex-row justify-between gap-4">
-            <h2 className="text-2xl font-bold">All Clients</h2>
-            <div className="flex flex-wrap gap-3">
-              <input type="text" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="px-4 py-2 border rounded-lg" />
-              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-4 py-2 border rounded-lg">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-gray-900">All Clients</h2>
+            <div className="flex flex-wrap gap-2">
+              <input type="text" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg" />
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg">
                 <option value="all">All Status</option>
                 {statuses.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <select value={industryFilter} onChange={e => setIndustryFilter(e.target.value)} className="px-4 py-2 border rounded-lg">
+              <select value={industryFilter} onChange={e => setIndustryFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg">
                 <option value="all">All Industries</option>
                 {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
               </select>
-              <button onClick={() => setIsAddModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition">
+              <button onClick={() => setIsAddModalOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 transition">
                 <ClientIcon /> Add Client
               </button>
             </div>
           </div>
 
           {loading ? (
-            <div className="p-12 text-center">Loading clients...</div>
+            <div className="p-8 text-center text-sm text-gray-500">Loading clients...</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Projects</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Projects</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 text-sm">
                   {clients.map(client => (
                     <tr key={client._id} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                          <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-semibold text-xs">
                             {client.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                           </div>
                           <div>
                             <div className="font-medium">{client.name}</div>
-                            <div className="text-sm text-gray-500">{client.industry}</div>
+                            <div className="text-xs text-gray-500">{client.industry}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">{client.company}</td>
-                      <td className="px-6 py-4 text-center font-semibold text-teal-600">{client.projects || 0}</td>
-                      <td className="px-6 py-4 font-semibold text-green-600">₹{client.value?.toLocaleString() || 0}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(client.status)}`}>
+                      <td className="px-4 py-3">{client.company}</td>
+                      <td className="px-4 py-3 text-center font-semibold text-teal-600">{client.projects || 0}</td>
+                      <td className="px-4 py-3 font-semibold text-green-600">₹{client.value?.toLocaleString() || 0}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(client.status)}`}>
                           {client.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <button onClick={() => { setSelectedClient(client); setIsViewModalOpen(true); }} className="text-blue-600 hover:bg-blue-100 p-2 rounded-lg transition" title="View">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => { setSelectedClient(client); setIsViewModalOpen(true); }} className="text-blue-600 hover:bg-blue-100 p-1.5 rounded-md transition" title="View">
                             <EyeIcon />
                           </button>
-                          <button onClick={() => { setSelectedClient(client); setIsEditModalOpen(true); }} className="text-yellow-600 hover:bg-yellow-100 p-2 rounded-lg transition" title="Edit">
+                          <button onClick={() => { setSelectedClient(client); setIsEditModalOpen(true); }} className="text-yellow-600 hover:bg-yellow-100 p-1.5 rounded-md transition" title="Edit">
                             <EditIcon />
                           </button>
-                          <button onClick={() => handleDeleteClient(client._id)} className="text-red-600 hover:bg-red-100 p-2 rounded-lg transition" title="Delete">
+                          <button onClick={() => handleDeleteClient(client._id)} className="text-red-600 hover:bg-red-100 p-1.5 rounded-md transition" title="Delete">
                             <DeleteIcon />
                           </button>
                         </div>
@@ -308,7 +317,7 @@ const ClientManagement = () => {
                   ))}
                 </tbody>
               </table>
-              {clients.length === 0 && <div className="text-center py-12 text-gray-500">No clients found</div>}
+              {clients.length === 0 && <div className="text-center py-8 text-gray-500">No clients found</div>}
             </div>
           )}
         </div>
@@ -317,46 +326,46 @@ const ClientManagement = () => {
       {/* ADD CLIENT MODAL - NOW FULLY WORKING WITH ALL FIELDS */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold flex items-center gap-3"><ClientIcon /> Add New Client</h2>
+          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2"><ClientIcon /> Add New Client</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="text-gray-500 hover:text-gray-700">
                 <CloseIcon />
               </button>
             </div>
 
-            <form onSubmit={handleAddClient} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <input required type="text" placeholder="Full Name" value={newClient.name} onChange={e => setNewClient({ ...newClient, name: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input required type="email" placeholder="Email" value={newClient.email} onChange={e => setNewClient({ ...newClient, email: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input required type="text" placeholder="Phone" value={newClient.phone} onChange={e => setNewClient({ ...newClient, phone: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input required type="text" placeholder="Company" value={newClient.company} onChange={e => setNewClient({ ...newClient, company: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <form onSubmit={handleAddClient} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input required type="text" placeholder="Full Name" value={newClient.name} onChange={e => setNewClient({ ...newClient, name: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                <input required type="email" placeholder="Email" value={newClient.email} onChange={e => setNewClient({ ...newClient, email: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                <input required type="text" placeholder="Phone" value={newClient.phone} onChange={e => setNewClient({ ...newClient, phone: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                <input required type="text" placeholder="Company" value={newClient.company} onChange={e => setNewClient({ ...newClient, company: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500" />
 
-                <select value={newClient.industry} onChange={e => setNewClient({ ...newClient, industry: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select value={newClient.industry} onChange={e => setNewClient({ ...newClient, industry: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500">
                   <option value="">Select Industry</option>
                   {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
                 </select>
 
-                <select value={newClient.status} onChange={e => setNewClient({ ...newClient, status: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select value={newClient.status} onChange={e => setNewClient({ ...newClient, status: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500">
                   {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
 
-                <input type="number" placeholder="Project Value (₹)" value={newClient.value} onChange={e => setNewClient({ ...newClient, value: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input type="number" placeholder="Total Projects" value={newClient.projects} onChange={e => setNewClient({ ...newClient, projects: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="number" placeholder="Project Value (₹)" value={newClient.value} onChange={e => setNewClient({ ...newClient, value: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                <input type="number" placeholder="Total Projects" value={newClient.projects} onChange={e => setNewClient({ ...newClient, projects: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <input type="date" value={newClient.lastContact} onChange={e => setNewClient({ ...newClient, lastContact: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="date" value={newClient.lastContact} onChange={e => setNewClient({ ...newClient, lastContact: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 <div></div>
               </div>
 
-              <textarea rows="4" placeholder="Notes (optional)" value={newClient.notes} onChange={e => setNewClient({ ...newClient, notes: e.target.value })} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+              <textarea rows="4" placeholder="Notes (optional)" value={newClient.notes} onChange={e => setNewClient({ ...newClient, notes: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"></textarea>
 
-              <div className="flex justify-end gap-4 mt-6">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+              <div className="flex justify-end gap-2 pt-1">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
                   Cancel
                 </button>
-                <button type="submit" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                <button type="submit" className="px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition font-medium">
                   Add Client
                 </button>
               </div>
@@ -372,40 +381,40 @@ const ClientManagement = () => {
       {/* EDIT MODAL (same as before) */}
       {isEditModalOpen && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold flex items-center gap-3"><EditIcon /> Edit Client</h2>
+          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2"><EditIcon /> Edit Client</h2>
               <button onClick={() => { setIsEditModalOpen(false); setSelectedClient(null); }}>
                 <CloseIcon />
               </button>
             </div>
-            <form onSubmit={handleEditClient} className="space-y-5">
+            <form onSubmit={handleEditClient} className="space-y-4">
               {/* Same form as Add modal but with selectedClient */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <input required type="text" placeholder="Full Name" value={selectedClient.name || ""} onChange={e => setSelectedClient({ ...selectedClient, name: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-                <input required type="email" placeholder="Email" value={selectedClient.email || ""} onChange={e => setSelectedClient({ ...selectedClient, email: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-                <input required type="text" placeholder="Phone" value={selectedClient.phone || ""} onChange={e => setSelectedClient({ ...selectedClient, phone: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-                <input required type="text" placeholder="Company" value={selectedClient.company || ""} onChange={e => setSelectedClient({ ...selectedClient, company: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-                <select value={selectedClient.industry || ""} onChange={e => setSelectedClient({ ...selectedClient, industry: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input required type="text" placeholder="Full Name" value={selectedClient.name || ""} onChange={e => setSelectedClient({ ...selectedClient, name: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                <input required type="email" placeholder="Email" value={selectedClient.email || ""} onChange={e => setSelectedClient({ ...selectedClient, email: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                <input required type="text" placeholder="Phone" value={selectedClient.phone || ""} onChange={e => setSelectedClient({ ...selectedClient, phone: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                <input required type="text" placeholder="Company" value={selectedClient.company || ""} onChange={e => setSelectedClient({ ...selectedClient, company: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                <select value={selectedClient.industry || ""} onChange={e => setSelectedClient({ ...selectedClient, industry: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
                   <option value="">Select Industry</option>
                   {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
                 </select>
-                <select value={selectedClient.status || "Active"} onChange={e => setSelectedClient({ ...selectedClient, status: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                <select value={selectedClient.status || "Active"} onChange={e => setSelectedClient({ ...selectedClient, status: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
                   {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <input type="number" placeholder="Project Value (₹)" value={selectedClient.value || ""} onChange={e => setSelectedClient({ ...selectedClient, value: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-                <input type="number" placeholder="Total Projects" value={selectedClient.projects || ""} onChange={e => setSelectedClient({ ...selectedClient, projects: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                <input type="number" placeholder="Project Value (₹)" value={selectedClient.value || ""} onChange={e => setSelectedClient({ ...selectedClient, value: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                <input type="number" placeholder="Total Projects" value={selectedClient.projects || ""} onChange={e => setSelectedClient({ ...selectedClient, projects: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <input type="date" value={selectedClient.lastContact?.split("T")[0] || ""} onChange={e => setSelectedClient({ ...selectedClient, lastContact: e.target.value })} className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="date" value={selectedClient.lastContact?.split("T")[0] || ""} onChange={e => setSelectedClient({ ...selectedClient, lastContact: e.target.value })} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" />
                 <div></div>
               </div>
-              <textarea rows="4" placeholder="Notes (optional)" value={selectedClient.notes || ""} onChange={e => setSelectedClient({ ...selectedClient, notes: e.target.value })} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
-              <div className="flex justify-end gap-4 mt-6">
-                <button type="button" onClick={() => { setIsEditModalOpen(false); setSelectedClient(null); }} className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+              <textarea rows="4" placeholder="Notes (optional)" value={selectedClient.notes || ""} onChange={e => setSelectedClient({ ...selectedClient, notes: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+              <div className="flex justify-end gap-2 pt-1">
+                <button type="button" onClick={() => { setIsEditModalOpen(false); setSelectedClient(null); }} className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
                   Cancel
                 </button>
-                <button type="submit" className="px-8 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition font-medium">
+                <button type="submit" className="px-4 py-2 text-sm bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition font-medium">
                   Update Client
                 </button>
               </div>
@@ -417,27 +426,27 @@ const ClientManagement = () => {
       {/* VIEW MODAL (same as before) */}
       {isViewModalOpen && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-8 py-6 flex justify-between items-center">
-              <h2 className="text-3xl font-bold text-gray-800">Client Details</h2>
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-5 py-3 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-900">Client Details</h2>
               <button onClick={() => setIsViewModalOpen(false)} className="text-gray-500 hover:text-gray-700">
                 <CloseIcon />
               </button>
             </div>
-            <div className="p-8">
-              <div className="flex items-center gap-6 mb-8">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
+            <div className="p-5">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 text-lg font-semibold">
                   {selectedClient.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold">{selectedClient.name}</h3>
-                  <p className="text-xl text-gray-600">{selectedClient.company}</p>
-                  <span className={`inline-block mt-2 px-4 py-1 rounded-full text-sm font-medium border ${getStatusColor(selectedClient.status)}`}>
+                  <h3 className="text-lg font-semibold">{selectedClient.name}</h3>
+                  <p className="text-sm text-gray-600">{selectedClient.company}</p>
+                  <span className={`inline-block mt-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(selectedClient.status)}`}>
                     {selectedClient.status}
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-sm text-gray-500">Email</p>
                   <p className="font-medium flex items-center gap-2"><EmailIcon /> {selectedClient.email}</p>
@@ -456,24 +465,24 @@ const ClientManagement = () => {
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                   <p className="text-sm text-gray-600">Total Project Value</p>
-                  <p className="text-2xl font-bold text-green-600">₹{selectedClient.value?.toLocaleString() || 0}</p>
+                  <p className="text-xl font-bold text-green-600">₹{selectedClient.value?.toLocaleString() || 0}</p>
                 </div>
                 <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
                   <p className="text-sm text-gray-600">Total Projects</p>
-                  <p className="text-2xl font-bold text-teal-600">{selectedClient.projects || 0}</p>
+                  <p className="text-xl font-bold text-teal-600">{selectedClient.projects || 0}</p>
                 </div>
               </div>
               {selectedClient.notes && (
-                <div className="bg-gray-50 p-6 rounded-lg">
+                <div className="bg-gray-50 p-5 rounded-lg">
                   <p className="text-sm text-gray-500 mb-2">Notes</p>
                   <p className="text-gray-800">{selectedClient.notes}</p>
                 </div>
               )}
-              <div className="flex justify-end gap-4 mt-8">
-                <button onClick={() => { setIsViewModalOpen(false); setIsEditModalOpen(true); }} className="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+              <div className="flex justify-end gap-2 mt-5">
+                <button onClick={() => { setIsViewModalOpen(false); setIsEditModalOpen(true); }} className="px-4 py-2 text-sm bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
                   Edit Client
                 </button>
-                <button onClick={() => setIsViewModalOpen(false)} className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                <button onClick={() => setIsViewModalOpen(false)} className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700">
                   Close
                 </button>
               </div>

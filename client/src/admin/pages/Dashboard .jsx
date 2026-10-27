@@ -72,19 +72,19 @@ const BarChart = ({ data, title, color = "blue" }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">{title}</h3>
-            <div className="flex items-end justify-between h-48">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-3">{title}</h3>
+            <div className="flex items-end justify-between h-44">
                 {chartData.labels.map((label, index) => (
-                    <div key={index} className="flex flex-col items-center flex-1 mx-1">
-                        <div className="text-xs text-gray-600 mb-2 text-center">{label}</div>
-                        <div
-                            className={`w-full ${colors[color]} rounded-t transition-all duration-500 hover:opacity-80`}
-                            style={{ height: `${(chartData.values[index] / maxValue) * 90}%` }}
-                        ></div>
-                        <div className="text-xs font-semibold text-gray-800 mt-2">
+                    <div key={index} className="flex flex-col items-center justify-end h-full flex-1 mx-1">
+                        <div className="text-xs font-semibold text-gray-800 mb-1">
                             {chartData.values[index]}
                         </div>
+                        <div
+                            className={`w-full max-w-[40px] ${colors[color]} rounded-t transition-all duration-500 hover:opacity-80`}
+                            style={{ height: `${(chartData.values[index] / maxValue) * 75}%` }}
+                        ></div>
+                        <div className="text-xs text-gray-500 mt-1.5 text-center">{label}</div>
                     </div>
                 ))}
                 {chartData.labels.length === 0 && (
@@ -102,9 +102,9 @@ const LineChart = ({ data, title, color = "blue" }) => {
     const maxValue = Math.max(...(chartData.values.length ? chartData.values : [1]));
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">{title}</h3>
-            <div className="h-48 relative">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-3">{title}</h3>
+            <div className="h-44 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="relative w-full h-full">
                         <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200"></div>
@@ -143,19 +143,19 @@ const PieChart = ({ data, title }) => {
     const chartData = data || { labels: [], values: [] };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">{title}</h3>
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-3">{title}</h3>
             <div className="flex items-center justify-center">
                 {chartData.values.length > 0 ? (
                     <div className="flex flex-col items-center">
                         <div className="w-40 h-40 relative">
-                            <div className="absolute inset-0 rounded-full border-4 border-blue-500 flex items-center justify-center">
-                                <span className="text-2xl font-bold text-gray-800">
+                            <div className="absolute inset-0 rounded-full border-4 border-violet-500 flex items-center justify-center">
+                                <span className="text-xl font-bold text-gray-800">
                                     {chartData.values.reduce((a, b) => a + b, 0)}
                                 </span>
                             </div>
                         </div>
-                        <div className="mt-6 space-y-2">
+                        <div className="mt-4 space-y-2">
                             {chartData.labels.map((label, index) => (
                                 <div key={index} className="flex items-center space-x-2">
                                     <div className="w-3 h-3 rounded-full" style={{
@@ -637,17 +637,17 @@ const Dashboard = () => {
     };
 
     const StatCard = ({ title, value, change, icon: Icon, color, loading: isLoading }) => (
-        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border-l-4" style={{ borderLeftColor: color }}>
+        <div className="bg-white rounded-lg border border-gray-200 border-l-4 shadow-sm p-4" style={{ borderLeftColor: color }}>
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-sm text-gray-600">{title}</p>
+                    <p className="text-xs font-medium text-gray-500">{title}</p>
                     {isLoading ? (
                         <div className="animate-pulse">
-                            <div className="h-8 w-24 bg-gray-200 rounded mt-2"></div>
+                            <div className="h-7 w-20 bg-gray-200 rounded mt-1.5"></div>
                         </div>
                     ) : (
                         <>
-                            <p className="text-2xl font-bold text-gray-800 mt-2">{value}</p>
+                            <p className="text-xl font-semibold text-gray-900 mt-1">{value}</p>
                             {change !== undefined && (
                                 <p className={`text-xs mt-1 ${change > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {change > 0 ? '↗' : '↘'} {Math.abs(change)}% from last month
@@ -656,8 +656,8 @@ const Dashboard = () => {
                         </>
                     )}
                 </div>
-                <div className="p-3 rounded-full bg-gray-100">
-                    <Icon className={`w-6 h-6 text-gray-600`} />
+                <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}14`, color }}>
+                    <Icon className="w-5 h-5" />
                 </div>
             </div>
         </div>
@@ -665,15 +665,15 @@ const Dashboard = () => {
 
     if (error && !loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
-                <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
-                    <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Partial Data Loaded</h2>
-                    <p className="text-gray-600 mb-4">{error}</p>
-                    <p className="text-sm text-gray-500 mb-6">Some API endpoints may not be available yet.</p>
+            <div className="min-h-[60vh] p-4 flex items-center justify-center">
+                <div className="bg-white rounded-xl shadow-sm p-6 max-w-md text-center">
+                    <div className="text-yellow-500 text-3xl mb-3">⚠️</div>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Partial Data Loaded</h2>
+                    <p className="text-sm text-gray-600 mb-3">{error}</p>
+                    <p className="text-sm text-gray-500 mb-4">Some API endpoints may not be available yet.</p>
                     <button
                         onClick={fetchAllDashboardData}
-                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        className="bg-violet-600 text-white px-4 py-2 text-sm rounded-lg hover:bg-violet-700 transition-colors font-medium"
                     >
                         Retry Loading
                     </button>
@@ -683,21 +683,21 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
+        <div className="w-full">
+            <div className="w-full">
                 {/* Header */}
-                <div className="mb-6 md:mb-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Dashboard Overview</h1>
-                    <p className="text-gray-600">
+                <div className="mb-5">
+                    <h1 className="admin-page-title">Dashboard Overview</h1>
+                    <p className="admin-page-subtitle">
                         {loading ? "Loading dashboard data..." : `Welcome back! Here's your system overview.`}
                     </p>
                 </div>
 
                 {/* Loading State */}
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
                         {[...Array(8)].map((_, i) => (
-                            <div key={i} className="bg-white rounded-xl shadow-lg p-6">
+                            <div key={i} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
                                 <div className="animate-pulse">
                                     <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
                                     <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
@@ -709,7 +709,7 @@ const Dashboard = () => {
                 ) : (
                     <>
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                             <StatCard
                                 title="Total Students"
                                 value={stats.students}
@@ -744,7 +744,7 @@ const Dashboard = () => {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
                             <StatCard
                                 title="Employees"
                                 value={stats.employees}
@@ -780,7 +780,7 @@ const Dashboard = () => {
                         </div>
 
                         {/* Charts Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
                             <BarChart
                                 data={chartData.revenue}
                                 title="Monthly Revenue (in ₹K)"
@@ -794,15 +794,15 @@ const Dashboard = () => {
                         </div>
 
                         {/* Main Content Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {/* Left Column - Recent Activities */}
-                            <div className="lg:col-span-2 space-y-8">
-                                <div className="bg-white rounded-2xl shadow-lg p-6">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-gray-800">Recent Activities</h2>
+                            <div className="lg:col-span-2 space-y-4">
+                                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <h2 className="text-base font-semibold text-gray-900">Recent Activities</h2>
                                         <button
                                             onClick={fetchAllDashboardData}
-                                            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                            className="text-sm text-violet-600 hover:text-violet-800 flex items-center gap-1"
                                         >
                                             <span>Refresh</span>
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -810,15 +810,15 @@ const Dashboard = () => {
                                             </svg>
                                         </button>
                                     </div>
-                                    <div className="space-y-4">
+                                    <div className="divide-y divide-gray-100">
                                         {recentActivities.map((activity, index) => (
-                                            <div key={index} className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${getPriorityColor(activity.color)}`}>
+                                            <div key={index} className="flex items-center space-x-3 px-2 py-2.5 hover:bg-gray-50 rounded-md transition-colors">
+                                                <div className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-base ${getPriorityColor(activity.color)}`}>
                                                     {activity.icon}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="font-semibold text-gray-800 truncate">{activity.title}</h3>
-                                                    <p className="text-sm text-gray-600 truncate">{activity.description}</p>
+                                                    <h3 className="text-sm font-medium text-gray-800 truncate">{activity.title}</h3>
+                                                    <p className="text-xs text-gray-500 truncate">{activity.description}</p>
                                                 </div>
                                                 <span className="text-xs text-gray-500 whitespace-nowrap">{activity.time}</span>
                                             </div>
@@ -828,15 +828,15 @@ const Dashboard = () => {
                             </div>
 
                             {/* Right Column */}
-                            <div className="space-y-8">
+                            <div className="space-y-4">
                                 {/* Top Performers */}
-                                <div className="bg-white rounded-2xl shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-gray-800 mb-6">Top Performers</h2>
-                                    <div className="space-y-4">
+                                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                                    <h2 className="text-base font-semibold text-gray-900 mb-3">Top Performers</h2>
+                                    <div className="space-y-1">
                                         {topPerformers.map((performer, index) => (
-                                            <div key={index} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                            <div key={index} className="flex items-center justify-between px-2 py-2 hover:bg-gray-50 rounded-md transition-colors">
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                                    <div className="w-8 h-8 shrink-0 bg-violet-100 rounded-full flex items-center justify-center text-violet-700 text-xs font-semibold">
                                                         {performer.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || '??'}
                                                     </div>
                                                     <div className="min-w-0">
@@ -851,30 +851,30 @@ const Dashboard = () => {
                                             </div>
                                         ))}
                                         {topPerformers.length === 0 && (
-                                            <p className="text-center text-gray-500 py-4">No performance data available</p>
+                                            <p className="text-center text-sm text-gray-500 py-3">No performance data available</p>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Quick Stats */}
-                                <div className="bg-white rounded-2xl shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-gray-800 mb-6">Quick Stats</h2>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="text-center p-4 bg-blue-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-blue-600">{stats.courses}</div>
-                                            <div className="text-sm text-gray-600">Active Courses</div>
+                                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                                    <h2 className="text-base font-semibold text-gray-900 mb-3">Quick Stats</h2>
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                        <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                            <div className="text-xl font-bold text-blue-600">{stats.courses}</div>
+                                            <div className="text-xs text-gray-600">Active Courses</div>
                                         </div>
-                                        <div className="text-center p-4 bg-green-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-green-600">{stats.projects}</div>
-                                            <div className="text-sm text-gray-600">Ongoing Projects</div>
+                                        <div className="text-center p-3 bg-green-50 rounded-lg">
+                                            <div className="text-xl font-bold text-green-600">{stats.projects}</div>
+                                            <div className="text-xs text-gray-600">Ongoing Projects</div>
                                         </div>
-                                        <div className="text-center p-4 bg-purple-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-purple-600">{stats.clients}</div>
-                                            <div className="text-sm text-gray-600">Active Clients</div>
+                                        <div className="text-center p-3 bg-purple-50 rounded-lg">
+                                            <div className="text-xl font-bold text-purple-600">{stats.clients}</div>
+                                            <div className="text-xs text-gray-600">Active Clients</div>
                                         </div>
-                                        <div className="text-center p-4 bg-orange-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-orange-600">{stats.employees}</div>
-                                            <div className="text-sm text-gray-600">Team Members</div>
+                                        <div className="text-center p-3 bg-orange-50 rounded-lg">
+                                            <div className="text-xl font-bold text-orange-600">{stats.employees}</div>
+                                            <div className="text-xs text-gray-600">Team Members</div>
                                         </div>
                                     </div>
                                 </div>

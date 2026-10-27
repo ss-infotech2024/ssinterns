@@ -217,14 +217,14 @@ export default function AdminLeaveDashboard() {
   // If no token, show access denied
   if (!token) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h1>
+      <div className="min-h-[60vh] flex items-center justify-center p-4">
+        <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm text-center max-w-md w-full">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-lg font-bold text-gray-800 mb-2">Access Denied</h1>
           <p className="text-gray-600 mb-4">Authentication required to access this page.</p>
           <button
             onClick={() => window.location.href = '/admin/login'}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
+            className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg transition"
           >
             Go to Login
           </button>
@@ -234,47 +234,47 @@ export default function AdminLeaveDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full">
+      <div className="w-full">
 
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Leave Management</h1>
-          <p className="text-gray-600 mt-1">Approve, Reject or Delete leave requests</p>
+        <div className="mb-5">
+          <h1 className="admin-page-title">Leave Management</h1>
+          <p className="admin-page-subtitle">Approve, Reject or Delete leave requests</p>
         </div>
 
         {/* Messages */}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-lg mb-4 flex items-center justify-between">
             <span>{success}</span>
             <button onClick={() => setSuccess('')} className="text-green-700 hover:text-green-900">×</button>
           </div>
         )}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-4 flex items-center justify-between">
             <span>{error}</span>
             <button onClick={() => setError('')} className="text-red-700 hover:text-red-900">×</button>
           </div>
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4 mb-4">
           {[
             { label: "Total Requests", value: stats.totalLeaves || 0, icon: Calendar, color: "blue" },
             { label: "Pending", value: stats.pending || 0, icon: Clock, color: "yellow" },
             { label: "Approved", value: stats.approved || 0, icon: CheckCircle, color: "green" },
             { label: "Rejected", value: stats.rejected || 0, icon: XCircle, color: "red" },
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-xl shadow p-5 border-l-4" style={{
+            <div key={i} className="bg-white rounded-lg shadow-sm p-4 border-l-4" style={{
               borderLeftColor: i === 0 ? "#3B82F6" : i === 1 ? "#F59E0B" : i === 2 ? "#10B981" : "#EF4444"
             }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-gray-600">{stat.label}</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-800">{stat.value}</p>
+                  <p className="text-xl font-semibold text-gray-900">{stat.value}</p>
                 </div>
-                <div className={`p-3 rounded-full ${i === 0 ? 'bg-blue-100' : i === 1 ? 'bg-yellow-100' : i === 2 ? 'bg-green-100' : 'bg-red-100'}`}>
-                  <stat.icon className={`w-6 h-6 ${i === 0 ? 'text-blue-600' : i === 1 ? 'text-yellow-600' : i === 2 ? 'text-green-600' : 'text-red-600'}`} />
+                <div className={`p-2 rounded-full ${i === 0 ? 'bg-blue-100' : i === 1 ? 'bg-yellow-100' : i === 2 ? 'bg-green-100' : 'bg-red-100'}`}>
+                  <stat.icon className={`w-5 h-5 ${i === 0 ? 'text-blue-600' : i === 1 ? 'text-yellow-600' : i === 2 ? 'text-green-600' : 'text-red-600'}`} />
                 </div>
               </div>
             </div>
@@ -282,14 +282,14 @@ export default function AdminLeaveDashboard() {
         </div>
 
         {/* Filters & Search */}
-        <div className="bg-white rounded-xl shadow overflow-hidden mb-6">
-          <div className="p-5 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h2 className="text-xl font-bold text-gray-800">All Leave Requests</h2>
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-4">
+          <div className="p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h2 className="text-lg font-bold text-gray-800">All Leave Requests</h2>
             <div className="flex flex-col md:flex-row gap-3">
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="px-4 py-2 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="px-4 py-2 text-sm border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -303,13 +303,13 @@ export default function AdminLeaveDashboard() {
                   placeholder="Search employee, ID, reason..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 text-sm border rounded-md w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 pr-4 py-2 text-sm border rounded-md w-full md:w-64 focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                 />
               </div>
               <button
                 onClick={fetchData}
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 transition"
+                className="bg-violet-600 hover:bg-violet-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 transition"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -320,12 +320,12 @@ export default function AdminLeaveDashboard() {
           {/* Table */}
           {loading ? (
             <div className="text-center py-16">
-              <RefreshCw className="w-12 h-12 text-blue-500 animate-spin mx-auto" />
+              <RefreshCw className="w-10 h-10 text-blue-500 animate-spin mx-auto" />
               <p className="mt-4 text-gray-600">Loading leave requests...</p>
             </div>
           ) : filteredLeaves.length === 0 ? (
             <div className="text-center py-16 text-gray-500">
-              <Users className="w-20 h-20 mx-auto mb-4 text-gray-300" />
+              <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p className="text-lg font-medium">
                 {leaves.length === 0 ? 'No leave requests found' : 'No matching leave requests'}
               </p>
@@ -338,21 +338,21 @@ export default function AdminLeaveDashboard() {
               <table className="w-full min-w-[1000px]">
                 <thead className="bg-gray-50 text-xs uppercase tracking-wider">
                   <tr>
-                    <th className="px-5 py-3 text-left">Employee</th>
-                    <th className="px-4 py-3 text-left">Leave Type</th>
-                    <th className="px-4 py-3 text-left">Dates</th>
-                    <th className="px-4 py-3 text-left">Reason</th>
-                    <th className="px-4 py-3 text-center">Applied On</th>
-                    <th className="px-4 py-3 text-center">Status</th>
-                    <th className="px-4 py-3 text-center">Actions</th>
+                    <th className="px-5 py-2 text-left">Employee</th>
+                    <th className="px-4 py-2 text-left">Leave Type</th>
+                    <th className="px-4 py-2 text-left">Dates</th>
+                    <th className="px-4 py-2 text-left">Reason</th>
+                    <th className="px-4 py-2 text-center">Applied On</th>
+                    <th className="px-4 py-2 text-center">Status</th>
+                    <th className="px-4 py-2 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y text-sm">
                   {filteredLeaves.map(leave => (
                     <tr key={leave._id} className="hover:bg-gray-50 transition">
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                             {leave.employeeName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                           </div>
                           <div>
@@ -361,17 +361,17 @@ export default function AdminLeaveDashboard() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 font-medium">{leave.leaveType}</td>
-                      <td className="px-4 py-4 text-sm">
+                      <td className="px-4 py-3 font-medium">{leave.leaveType}</td>
+                      <td className="px-4 py-3 text-sm">
                         {formatDate(leave.startDate)} → {formatDate(leave.endDate)}
                       </td>
-                      <td className="px-4 py-4 text-gray-600 max-w-xs truncate" title={leave.reason}>
+                      <td className="px-4 py-3 text-gray-600 max-w-xs truncate" title={leave.reason}>
                         {leave.reason}
                       </td>
-                      <td className="px-4 py-4 text-center text-xs text-gray-500">
+                      <td className="px-4 py-3 text-center text-xs text-gray-500">
                         {formatDateTime(leave.appliedAt)}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-3 text-center">
                         {leave.status === 'pending' && (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
                             <Clock className="w-3 h-3" /> PENDING
@@ -388,7 +388,7 @@ export default function AdminLeaveDashboard() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
                           {leave.status === 'pending' && (
                             <>

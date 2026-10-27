@@ -70,7 +70,7 @@ const Skeleton = ({ cls = "" }) => (
 
 const SkeletonRow = () => (
   <tr className="border-b border-slate-100">
-    <td className="px-4 py-4">
+    <td className="px-4 py-3">
       <div className="flex items-center gap-3">
         <Skeleton cls="w-10 h-10 rounded-full flex-shrink-0" />
         <div className="space-y-2 flex-1">
@@ -79,23 +79,23 @@ const SkeletonRow = () => (
         </div>
       </div>
     </td>
-    <td className="px-4 py-4"><Skeleton cls="h-6 w-20 rounded-full" /></td>
-    <td className="px-4 py-4">
+    <td className="px-4 py-3"><Skeleton cls="h-6 w-20 rounded-full" /></td>
+    <td className="px-4 py-3">
       <Skeleton cls="h-3.5 w-24 mb-1.5" />
       <Skeleton cls="h-3 w-14" />
     </td>
-    <td className="px-4 py-4"><Skeleton cls="h-3.5 w-20" /></td>
-    <td className="px-4 py-4">
+    <td className="px-4 py-3"><Skeleton cls="h-3.5 w-20" /></td>
+    <td className="px-4 py-3">
       <div className="flex items-center gap-2">
         <Skeleton cls="h-2 w-16 rounded-full" />
         <Skeleton cls="h-5 w-10 rounded" />
       </div>
     </td>
-    <td className="px-4 py-4">
+    <td className="px-4 py-3">
       <Skeleton cls="h-3.5 w-12 mb-1.5" />
       <Skeleton cls="h-3 w-20" />
     </td>
-    <td className="px-4 py-4">
+    <td className="px-4 py-3">
       <div className="flex gap-1">
         <Skeleton cls="h-8 w-8 rounded-lg" />
         <Skeleton cls="h-8 w-8 rounded-lg" />
@@ -973,18 +973,17 @@ const EmployeeManagement = () => {
   return (
     <>
       <style>{shimmerStyle}</style>
-      <Toaster position="top-right" toastOptions={{ style: { fontFamily: "'DM Sans', sans-serif" } }} />
+      <Toaster position="top-right" />
 
-      <div className="min-h-screen bg-slate-50 font-[DM_Sans,sans-serif]">
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      <div className="w-full">
 
-        <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-8">
+        <div className="w-full">
 
           {/* ── Header ── */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="admin-page-header mb-5">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Employee Management</h1>
-              <p className="text-slate-500 text-sm mt-0.5">Manage your team — {merged.length} members total</p>
+              <h1 className="admin-page-title">Employee Management</h1>
+              <p className="admin-page-subtitle">Manage your team — {merged.length} members total</p>
             </div>
             
               <div className="flex items-center gap-2">
@@ -1017,7 +1016,7 @@ const EmployeeManagement = () => {
           </div>
 
           {/* ── Stat Cards ── */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-5">
             {loading ? (
               Array(5).fill(0).map((_, i) => <StatCardSkeleton key={i} />)
             ) : (
@@ -1078,7 +1077,7 @@ const EmployeeManagement = () => {
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
                     {["Employee", "Department", "Position", "Salary", "Performance", "Tasks", "Actions"].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                      <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -1104,7 +1103,7 @@ const EmployeeManagement = () => {
                       return (
                         <tr key={emp._id} className="border-b border-slate-50 hover:bg-slate-50/70 transition-colors">
                           {/* Employee */}
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                                 {emp.name?.charAt(0)?.toUpperCase() || "?"}
@@ -1117,25 +1116,25 @@ const EmployeeManagement = () => {
                           </td>
 
                           {/* Department */}
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${deptColor(emp.department)}`}>
                               {deptName(emp.department)}
                             </span>
                           </td>
 
                           {/* Position */}
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             <p className="text-sm text-slate-700">{emp.position}</p>
                             <p className="text-xs text-slate-400">{emp.employeeType}</p>
                           </td>
 
                           {/* Salary */}
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             <p className="text-sm font-medium text-slate-800">₹{emp.salary?.toLocaleString() || "—"}</p>
                           </td>
 
                           {/* Performance */}
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             {isLoading ? (
                               <div className="flex items-center gap-2">
                                 <Skeleton cls="h-2 w-16 rounded-full" />
@@ -1153,7 +1152,7 @@ const EmployeeManagement = () => {
                           </td>
 
                           {/* Tasks */}
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             {isLoading ? (
                               <>
                                 <Skeleton cls="h-3.5 w-12 mb-1" />
@@ -1174,7 +1173,7 @@ const EmployeeManagement = () => {
                           </td>
 
                           {/* Actions */}
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             <div className="flex items-center gap-1">
                               <button onClick={() => setSelectedEmp(emp)}
                                 className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="View">
@@ -1209,7 +1208,7 @@ const EmployeeManagement = () => {
 
       {/* ══ Add Modal ══════════════════════════════════════════════════════════ */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add New Employee">
-        <form onSubmit={handleAdd} className="p-6">
+        <form onSubmit={handleAdd} className="p-5">
           <FieldGrid
             fields={[
               { label:"Full Name *",    key:"name",         type:"text",   required:true,  placeholder:"John Doe" },
@@ -1234,7 +1233,7 @@ const EmployeeManagement = () => {
       {/* ══ Edit Modal ══════════════════════════════════════════════════════════ */}
       <Modal open={editOpen && !!selectedEmp} onClose={() => { setEditOpen(false); setSelectedEmp(null); }} title="Edit Employee">
         {selectedEmp && (
-          <form onSubmit={handleEdit} className="p-6">
+          <form onSubmit={handleEdit} className="p-5">
             <FieldGrid
               fields={[
                 { label:"Full Name *", key:"name",     type:"text",   required:true },
@@ -1258,7 +1257,7 @@ const EmployeeManagement = () => {
       {/* ══ Credentials Modal ══════════════════════════════════════════════════ */}
       {credsOpen && newCreds && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 text-center">
             <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
               <ICheck />
             </div>
@@ -1293,8 +1292,8 @@ const EmployeeManagement = () => {
       {/* ══ View Details Modal ══════════════════════════════════════════════════ */}
       {selectedEmp && !addOpen && !editOpen && !credsOpen && (
         <Modal open title="Employee Details" onClose={() => setSelectedEmp(null)}>
-          <div className="p-6">
-            <div className="flex items-center gap-4 mb-6">
+          <div className="p-5">
+            <div className="flex items-center gap-4 mb-5">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-700 to-slate-500 flex items-center justify-center text-white text-2xl font-bold">
                 {selectedEmp.name?.charAt(0)?.toUpperCase() || "?"}
               </div>
@@ -1327,15 +1326,15 @@ const EmployeeManagement = () => {
       {/* ══ Bulk Add Modal ═══════════════════════════════════════════════════════ */}
         {bulkOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+            <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-slate-100 px-5 py-3.5 flex justify-between items-center rounded-t-xl">
                 <h3 className="text-lg font-bold text-slate-800">Bulk Add Employees</h3>
                 <button onClick={closeBulkModal} className="text-slate-400 hover:text-slate-700 transition">
                   <IClose />
                 </button>
               </div>
 
-              <div className="p-6 space-y-5">
+              <div className="p-5 space-y-4">
                 {/* Step 1 */}
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
                   <h4 className="font-semibold text-blue-800 text-sm mb-1">Step 1 — Download Template</h4>
@@ -1513,8 +1512,8 @@ const INPUT_CLS = "w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-
 const Modal = ({ open, onClose, title, children }) =>
   open ? (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b border-slate-100 px-5 py-3.5 flex justify-between items-center rounded-t-xl">
           <h3 className="text-lg font-bold text-slate-800">{title}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700 transition"><IClose /></button>
         </div>

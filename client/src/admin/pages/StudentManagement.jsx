@@ -41,7 +41,7 @@ const DeleteIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-const CloseIcon = ({ className = "w-6 h-6" }) => (
+const CloseIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
@@ -499,63 +499,65 @@ const EmployeeManagement = () => {
     if (success) setTimeout(() => setSuccess(""), 5000);
   }, [success]);
 
-  if (!token) return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">Redirecting...</div>;
+  if (!token) return <div className="min-h-[60vh] text-sm text-slate-500 flex items-center justify-center">Redirecting...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-2">Employee Management</h1>
-        <p className="text-center text-gray-600 mb-6">Real-time Live Status Tracking</p>
+    <div className="w-full">
+      <div className="w-full">
+        <div className="admin-page-header mb-5">
+          <div>
+            <h1 className="admin-page-title">Employee Management</h1>
+            <p className="admin-page-subtitle">Real-time Live Status Tracking</p>
+          </div>
+          <button
+            onClick={fetchEmployees}
+            className="self-start sm:self-auto bg-white border border-gray-300 text-gray-700 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Refresh Status
+          </button>
+        </div>
 
         {success && (
-          <div className="bg-green-100 text-green-800 p-4 rounded-lg mb-4 text-center">
+          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-2.5 text-sm rounded-lg mb-4">
             {success}
           </div>
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-5 rounded-xl shadow text-center">
-            <p className="text-gray-600">Total Employees</p>
-            <p className="text-3xl font-bold">{employees.length}</p>
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-4">
+          <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <p className="text-xs font-medium text-gray-500">Total Employees</p>
+            <p className="text-xl font-semibold mt-1">{employees.length}</p>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow text-center">
-            <p className="text-gray-600">Online Now</p>
-            <p className="text-3xl font-bold text-green-600">{onlineCount}</p>
+          <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <p className="text-xs font-medium text-gray-500">Online Now</p>
+            <p className="text-xl font-semibold mt-1 text-green-600">{onlineCount}</p>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow text-center">
-            <p className="text-gray-600">Offline</p>
-            <p className="text-3xl font-bold text-red-600">{employees.length - onlineCount}</p>
+          <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <p className="text-xs font-medium text-gray-500">Offline</p>
+            <p className="text-xl font-semibold mt-1 text-red-600">{employees.length - onlineCount}</p>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow text-center">
-            <button
-              onClick={fetchEmployees}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Refresh Status
-            </button>
-          </div>
-        </div>
+                  </div>
 
         {/* Controls and Table */}
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <div className="p-6 border-b flex flex-col md:flex-row justify-between gap-4">
-            <h2 className="text-2xl font-bold">All Employees</h2>
-            <div className="flex gap-3 flex-wrap">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-gray-900">All Employees</h2>
+            <div className="flex gap-2 flex-wrap">
               <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Search employees..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                 />
               </div>
               <select
                 value={departmentFilter}
                 onChange={e => setDepartmentFilter(e.target.value)}
-                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
               >
                 <option value="all">All Departments</option>
                 {departments.map(d => (
@@ -565,7 +567,7 @@ const EmployeeManagement = () => {
               <select
                 value={statusSort}
                 onChange={e => setStatusSort(e.target.value)}
-                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
               >
                 {statusSortOptions.map(option => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -582,7 +584,7 @@ const EmployeeManagement = () => {
 
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                className="bg-violet-600 text-white px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 hover:bg-violet-700 transition-colors"
               >
                 <UserIcon /> Add Employee
               </button>
@@ -590,28 +592,28 @@ const EmployeeManagement = () => {
           </div>
 
           {loading ? (
-            <div className="p-10 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Loading live status...</p>
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-500">Loading live status...</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
                   <tr>
-                    <th className="px-6 py-4 text-left">Status</th>
-                    <th className="px-6 py-4 text-left">Name</th>
-                    <th className="px-6 py-4 text-left">Email</th>
-                    <th className="px-6 py-4 text-left">Department</th>
-                    <th className="px-6 py-4 text-left">Position</th>
-                    <th className="px-6 py-4 text-center">Actions</th>
+                    <th className="px-4 py-2.5 text-left">Status</th>
+                    <th className="px-4 py-2.5 text-left">Name</th>
+                    <th className="px-4 py-2.5 text-left">Email</th>
+                    <th className="px-4 py-2.5 text-left">Department</th>
+                    <th className="px-4 py-2.5 text-left">Position</th>
+                    <th className="px-4 py-2.5 text-center">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className="divide-y text-sm">
                   {filtered.length > 0 ? (
                     filtered.map(emp => (
                       <tr key={emp._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <LiveStatusIcon isActive={emp.isOnline} />
                             <span className={emp.isOnline ? "text-green-600 font-medium" : "text-red-600"}>
@@ -619,24 +621,24 @@ const EmployeeManagement = () => {
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-medium">{emp.name}</td>
-                        <td className="px-6 py-4">{emp.email}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3 font-medium">{emp.name}</td>
+                        <td className="px-4 py-3">{emp.email}</td>
+                        <td className="px-4 py-3">
                           {departments.find(d => d.id === emp.department)?.name || "—"}
                         </td>
-                        <td className="px-6 py-4">{emp.position}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">{emp.position}</td>
+                        <td className="px-4 py-3">
                           <div className="flex justify-center gap-2">
                             <button
                               onClick={() => { setSelectedEmployee(emp); setIsViewModalOpen(true); }}
-                              className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
+                              className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-md transition-colors"
                               title="View Details"
                             >
                               <EyeIcon />
                             </button>
                             <button
                               onClick={() => { setSelectedEmployee(emp); setIsEditModalOpen(true); }}
-                              className="text-yellow-600 hover:bg-yellow-50 p-2 rounded transition-colors"
+                              className="text-yellow-600 hover:bg-yellow-50 p-1.5 rounded-md transition-colors"
                               title="Edit"
                             >
                               <EditIcon />
@@ -651,14 +653,14 @@ const EmployeeManagement = () => {
                                 });
                                 setIsResetPasswordModalOpen(true);
                               }}
-                              className="text-green-600 hover:bg-green-50 p-2 rounded transition-colors"
+                              className="text-green-600 hover:bg-green-50 p-1.5 rounded-md transition-colors"
                               title="Reset Password"
                             >
                               Reset
                             </button>
                             <button
                               onClick={() => handleDelete(emp._id)}
-                              className="text-red-600 hover:bg-red-50 p-2 rounded transition-colors"
+                              className="text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors"
                               title="Delete"
                             >
                               <DeleteIcon />
@@ -669,7 +671,7 @@ const EmployeeManagement = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan="6" className="px-4 py-6 text-center text-gray-500">
                         No employees found matching your filters.
                       </td>
                     </tr>
@@ -683,31 +685,31 @@ const EmployeeManagement = () => {
         {/* ========== BULK ADD MODAL ========== */}
         {isBulkModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-2xl font-bold">Bulk Add Employees</h3>
+            <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h3 className="text-lg font-semibold">Bulk Add Employees</h3>
                 <button onClick={closeBulkModal} className="text-gray-500 hover:text-gray-700">
                   <CloseIcon />
                 </button>
               </div>
 
-              <div className="p-6 space-y-6">
+              <div className="p-5 space-y-4">
                 {/* Step 1: Download Template */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 className="font-semibold text-blue-800 mb-2">Step 1: Download Template</h4>
                   <p className="text-sm text-blue-700 mb-4">
                     Download the Excel template, fill employee details, then upload it below.
                   </p>
                   <button
                     onClick={downloadTemplate}
-                    className="bg-blue-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                    className="bg-violet-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-violet-700 transition-colors"
                   >
                     <DownloadIcon /> Download Excel Template
                   </button>
                 </div>
 
                 {/* Step 2: Upload File */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-800 mb-2">Step 2: Upload Filled Excel</h4>
                   <input
                     type="file"
@@ -742,7 +744,7 @@ const EmployeeManagement = () => {
                             <th className="px-3 py-2 text-left">Login ID</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y">
+                        <tbody className="divide-y text-sm">
                           {parsedEmployees.slice(0, 10).map((emp, idx) => (
                             <tr key={idx} className="hover:bg-gray-50">
                               <td className="px-3 py-2">{emp.name || <span className="text-red-500">Missing</span>}</td>
@@ -791,14 +793,14 @@ const EmployeeManagement = () => {
                   <button
                     type="button"
                     onClick={closeBulkModal}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                   >
                     Close
                   </button>
                   <button
                     onClick={handleBulkUpload}
                     disabled={parsedEmployees.length === 0 || bulkLoading}
-                    className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {bulkLoading ? (
                       <>
@@ -820,9 +822,9 @@ const EmployeeManagement = () => {
         {/* ADD EMPLOYEE MODAL */}
         {isAddModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-2xl font-bold">Add New Employee</h3>
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h3 className="text-lg font-semibold">Add New Employee</h3>
                 <button
                   onClick={() => setIsAddModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -830,47 +832,47 @@ const EmployeeManagement = () => {
                   <CloseIcon />
                 </button>
               </div>
-              <form onSubmit={handleAdd} className="p-6 space-y-6">
+              <form onSubmit={handleAdd} className="p-5 space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
                     <input
                       type="text"
                       required
                       placeholder="Enter full name"
                       value={newEmployee.name}
                       onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
                     <input
                       type="email"
                       required
                       placeholder="Enter email"
                       value={newEmployee.email}
                       onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
                     <input
                       type="tel"
                       placeholder="Enter phone number"
                       value={newEmployee.phone}
                       onChange={e => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Department *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Department *</label>
                     <select
                       required
                       value={newEmployee.department}
                       onChange={e => setNewEmployee({ ...newEmployee, department: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     >
                       <option value="">Select Department</option>
                       {departments.map(d => (
@@ -879,50 +881,50 @@ const EmployeeManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Position *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Position *</label>
                     <input
                       type="text"
                       required
                       placeholder="Enter position"
                       value={newEmployee.position}
                       onChange={e => setNewEmployee({ ...newEmployee, position: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Salary *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Salary *</label>
                     <input
                       type="number"
                       required
                       placeholder="Enter salary"
                       value={newEmployee.salary}
                       onChange={e => setNewEmployee({ ...newEmployee, salary: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Joining Date *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Joining Date *</label>
                     <input
                       type="date"
                       required
                       value={newEmployee.joiningDate}
                       onChange={e => setNewEmployee({ ...newEmployee, joiningDate: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Login ID *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Login ID *</label>
                     <input
                       type="text"
                       required
                       placeholder="Enter login ID"
                       value={newEmployee.loginId}
                       onChange={e => setNewEmployee({ ...newEmployee, loginId: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Password (min 6) *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Password (min 6) *</label>
                     <input
                       type="text"
                       required
@@ -930,21 +932,21 @@ const EmployeeManagement = () => {
                       placeholder="Enter password"
                       value={newEmployee.password}
                       onChange={e => setNewEmployee({ ...newEmployee, password: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                 </div>
-                <div className="flex justify-end gap-4 pt-6 border-t">
+                <div className="flex justify-end gap-4 pt-4 border-t">
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
                   >
                     Create Employee
                   </button>
@@ -957,9 +959,9 @@ const EmployeeManagement = () => {
         {/* VIEW EMPLOYEE MODAL */}
         {isViewModalOpen && selectedEmployee && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-2xl font-bold">Employee Details</h3>
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h3 className="text-lg font-semibold">Employee Details</h3>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -967,14 +969,14 @@ const EmployeeManagement = () => {
                   <CloseIcon />
                 </button>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-5 space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-lg font-bold">
                     {selectedEmployee.name?.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold">{selectedEmployee.name}</h4>
-                    <p className="text-gray-600">{selectedEmployee.email}</p>
+                    <h4 className="text-lg font-bold">{selectedEmployee.name}</h4>
+                    <p className="text-xs font-medium text-gray-500">{selectedEmployee.email}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1002,10 +1004,10 @@ const EmployeeManagement = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end p-6 border-t">
+              <div className="flex justify-end p-5 border-t">
                 <button
                   onClick={() => setIsViewModalOpen(false)}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
                 >
                   Close
                 </button>
@@ -1017,9 +1019,9 @@ const EmployeeManagement = () => {
         {/* EDIT EMPLOYEE MODAL */}
         {isEditModalOpen && selectedEmployee && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-2xl font-bold">Edit Employee</h3>
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h3 className="text-lg font-semibold">Edit Employee</h3>
                 <button
                   onClick={() => setIsEditModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -1027,43 +1029,43 @@ const EmployeeManagement = () => {
                   <CloseIcon />
                 </button>
               </div>
-              <form onSubmit={handleEdit} className="p-6 space-y-6">
+              <form onSubmit={handleEdit} className="p-5 space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
                     <input
                       type="text"
                       required
                       value={selectedEmployee.name}
                       onChange={e => setSelectedEmployee({ ...selectedEmployee, name: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
                     <input
                       type="email"
                       required
                       value={selectedEmployee.email}
                       onChange={e => setSelectedEmployee({ ...selectedEmployee, email: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
                     <input
                       type="tel"
                       value={selectedEmployee.phone}
                       onChange={e => setSelectedEmployee({ ...selectedEmployee, phone: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
                     <select
                       value={selectedEmployee.department}
                       onChange={e => setSelectedEmployee({ ...selectedEmployee, department: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     >
                       {departments.map(d => (
                         <option key={d.id} value={d.id}>{d.name}</option>
@@ -1071,36 +1073,36 @@ const EmployeeManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Position</label>
                     <input
                       type="text"
                       required
                       value={selectedEmployee.position}
                       onChange={e => setSelectedEmployee({ ...selectedEmployee, position: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Joining Date</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Joining Date</label>
                     <input
                       type="date"
                       value={selectedEmployee.joiningDate}
                       onChange={e => setSelectedEmployee({ ...selectedEmployee, joiningDate: e.target.value })}
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                 </div>
-                <div className="flex justify-end gap-4 pt-6 border-t">
+                <div className="flex justify-end gap-4 pt-4 border-t">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
                   >
                     Update Employee
                   </button>
@@ -1113,9 +1115,9 @@ const EmployeeManagement = () => {
         {/* RESET PASSWORD MODAL */}
         {isResetPasswordModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-2xl font-bold">Reset Password</h3>
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h3 className="text-lg font-semibold">Reset Password</h3>
                 <button
                   onClick={() => setIsResetPasswordModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -1123,13 +1125,13 @@ const EmployeeManagement = () => {
                   <CloseIcon />
                 </button>
               </div>
-              <form onSubmit={handleResetPassword} className="p-6 space-y-4">
+              <form onSubmit={handleResetPassword} className="p-5 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Employee</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Employee</label>
                   <p className="font-medium">{resetPasswordData.employeeName}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">New Password *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password *</label>
                   <input
                     type="text"
                     required
@@ -1137,31 +1139,31 @@ const EmployeeManagement = () => {
                     placeholder="Enter new password"
                     value={resetPasswordData.newPassword}
                     onChange={e => setResetPasswordData({ ...resetPasswordData, newPassword: e.target.value })}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password *</label>
                   <input
                     type="text"
                     required
                     placeholder="Confirm new password"
                     value={resetPasswordData.confirmPassword}
                     onChange={e => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                   />
                 </div>
-                <div className="flex justify-end gap-4 pt-6 border-t">
+                <div className="flex justify-end gap-4 pt-4 border-t">
                   <button
                     type="button"
                     onClick={() => setIsResetPasswordModalOpen(false)}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
                   >
                     Reset Password
                   </button>
@@ -1174,9 +1176,9 @@ const EmployeeManagement = () => {
         {/* CREDENTIALS MODAL */}
         {isCredentialsModalOpen && newEmployeeCredentials && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h3 className="text-2xl font-bold">Employee Credentials</h3>
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h3 className="text-lg font-semibold">Employee Credentials</h3>
                 <button
                   onClick={() => setIsCredentialsModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -1184,7 +1186,7 @@ const EmployeeManagement = () => {
                   <CloseIcon />
                 </button>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-5 space-y-4">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <p className="text-yellow-800 text-sm">
                     <strong>Important:</strong> Save these credentials securely. They will not be shown again.
@@ -1211,16 +1213,16 @@ const EmployeeManagement = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-4 p-6 border-t">
+              <div className="flex justify-end gap-4 p-5 border-t">
                 <button
                   onClick={copyCredentialsToClipboard}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
                 >
                   Copy to Clipboard
                 </button>
                 <button
                   onClick={() => setIsCredentialsModalOpen(false)}
-                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   Close
                 </button>

@@ -343,19 +343,19 @@ const getFeeStatusBadge = (student) => {
 
 // Components
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center h-screen">
+  <div className="flex items-center justify-center min-h-[60vh]">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div>
       <p className="mt-4 text-gray-600">Loading courses...</p>
     </div>
   </div>
 );
 
 const ErrorDisplay = ({ error, onRetry, onLogin }) => (
-  <div className="flex items-center justify-center h-screen">
+  <div className="flex items-center justify-center min-h-[60vh]">
     <div className="text-center max-w-md">
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <XCircleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+      <div className="bg-red-50 border border-red-200 rounded-lg p-5">
+        <XCircleIcon className="w-10 h-10 text-red-500 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Courses</h3>
         <p className="text-red-600 mb-4">{error}</p>
         <div className="flex gap-3 justify-center">
@@ -370,7 +370,7 @@ const ErrorDisplay = ({ error, onRetry, onLogin }) => (
             <>
               <button
                 onClick={onRetry}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center"
+                className="bg-violet-600 text-white px-4 py-2 rounded hover:bg-violet-700 flex items-center"
               >
                 <ArrowPathIcon className="w-4 h-4 mr-2" />
                 Retry
@@ -400,11 +400,11 @@ const ErrorDisplay = ({ error, onRetry, onLogin }) => (
 const EmptyState = ({ onCreateCourse }) => (
   <div className="flex items-center justify-center h-full min-h-[60vh]">
     <div className="text-center">
-      <AcademicCapIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-      <p className="text-xl text-gray-500 mb-4">No courses available</p>
+      <AcademicCapIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      <p className="text-base text-gray-500 mb-4">No courses available</p>
       <button
         onClick={onCreateCourse}
-        className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 flex items-center mx-auto"
+        className="bg-violet-600 text-white px-4 py-2 text-sm font-medium rounded-lg hover:bg-violet-700 flex items-center mx-auto"
       >
         <PlusIcon className="w-5 h-5 mr-2" />
         Create First Course
@@ -414,49 +414,47 @@ const EmptyState = ({ onCreateCourse }) => (
 );
 
 const AnalyticsDashboard = ({ analytics }) => (
-  <div className="mb-8">
-    <div className="text-center mb-6">
-      <h2 className="text-lg font-semibold text-gray-700">Fees, Attendance & Reminders</h2>
-    </div>
+  <div className="mb-5">
+    <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Fees, Attendance & Reminders</h2>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between border-l-4 border-blue-500">
+      <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between border border-gray-200 border-l-4 border-l-blue-500">
         <div>
-          <p className="text-3xl font-bold text-blue-600">{analytics.totalStudents}</p>
-          <p className="text-sm text-gray-600 mt-1">Students</p>
+          <p className="text-xl font-semibold text-blue-600">{analytics.totalStudents}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Students</p>
         </div>
-        <div className="bg-blue-100 p-3 rounded-full">
-          <UsersIcon className="w-6 h-6 text-blue-600" />
+        <div className="bg-blue-100 p-2 rounded-full">
+          <UsersIcon className="w-5 h-5 text-blue-600" />
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between border-l-4 border-green-500">
+      <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between border border-gray-200 border-l-4 border-l-green-500">
         <div>
-          <p className="text-3xl font-bold text-green-600">{analytics.totalCourses}</p>
-          <p className="text-sm text-gray-600 mt-1">Courses</p>
+          <p className="text-xl font-semibold text-green-600">{analytics.totalCourses}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Courses</p>
         </div>
-        <div className="bg-green-100 p-3 rounded-full">
-          <AcademicCapIcon className="w-6 h-6 text-green-600" />
+        <div className="bg-green-100 p-2 rounded-full">
+          <AcademicCapIcon className="w-5 h-5 text-green-600" />
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between border-l-4 border-purple-500">
+      <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between border border-gray-200 border-l-4 border-l-purple-500">
         <div>
-          <p className="text-3xl font-bold text-purple-600">{formatCurrency(analytics.totalPendingFees)}</p>
-          <p className="text-sm text-gray-600 mt-1">Pending Fees</p>
+          <p className="text-xl font-semibold text-purple-600">{formatCurrency(analytics.totalPendingFees)}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Pending Fees</p>
         </div>
-        <div className="bg-purple-100 p-3 rounded-full">
-          <CurrencyDollarIcon className="w-6 h-6 text-purple-600" />
+        <div className="bg-purple-100 p-2 rounded-full">
+          <CurrencyDollarIcon className="w-5 h-5 text-purple-600" />
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between border-l-4 border-orange-500">
+      <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between border border-gray-200 border-l-4 border-l-orange-500">
         <div>
-          <p className="text-3xl font-bold text-orange-600">{analytics.reminders}</p>
-          <p className="text-sm text-gray-600 mt-1">Reminders</p>
+          <p className="text-xl font-semibold text-orange-600">{analytics.reminders}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Reminders</p>
         </div>
-        <div className="bg-orange-100 p-3 rounded-full">
-          <BellIcon className="w-6 h-6 text-orange-600" />
+        <div className="bg-orange-100 p-2 rounded-full">
+          <BellIcon className="w-5 h-5 text-orange-600" />
         </div>
       </div>
     </div>
@@ -464,7 +462,7 @@ const AnalyticsDashboard = ({ analytics }) => (
 );
 
 const CourseSelector = ({ courses, selectedCourse, onSelectCourse }) => (
-  <div className="bg-white rounded-lg shadow p-4">
+  <div className="bg-white rounded-lg shadow-sm p-4">
     <h3 className="font-semibold text-gray-700 mb-3 flex items-center">
       <CalendarIcon className="w-5 h-5 mr-2 text-indigo-600" />
       Courses ({courses.length})
@@ -497,15 +495,15 @@ const CourseSelector = ({ courses, selectedCourse, onSelectCourse }) => (
 );
 
 const CourseDetails = ({ course, onEdit, onDelete }) => (
-  <div className="bg-white rounded-lg shadow p-6">
+  <div className="bg-white rounded-lg shadow-sm p-5">
     <div className="flex justify-between items-start">
       <div className="flex-1">
         <div className="flex items-center gap-3 mb-2">
-          <h2 className="text-2xl font-bold text-gray-800">{course.title}</h2>
+          <h2 className="text-lg font-semibold text-gray-800">{course.title}</h2>
           {getStatusBadge(getCourseStatus(course.startDate, course.endDate))}
         </div>
         <p className="text-sm text-gray-600 mb-3">{course.description}</p>
-        <div className="flex items-center gap-6 text-sm text-gray-600">
+        <div className="flex items-center gap-4 text-sm text-gray-600">
           <div className="flex items-center">
             <CalendarIcon className="w-5 h-5 mr-1 text-indigo-600" />
             <span><strong>Start:</strong> {format(new Date(course.startDate), "dd MMM yyyy")}</span>
@@ -551,7 +549,7 @@ const CourseDetails = ({ course, onEdit, onDelete }) => (
 );
 
 const StudentsTable = ({ students, onAddStudent, onEditStudent, onDeleteStudent, onViewStudent, onSendReminder }) => (
-  <div className="bg-white rounded-lg shadow">
+  <div className="bg-white rounded-lg shadow-sm">
     <div className="p-4 border-b flex justify-between items-center">
       <h3 className="font-semibold text-gray-700 flex items-center">
         <UsersIcon className="w-5 h-5 mr-2 text-indigo-600" />
@@ -570,18 +568,18 @@ const StudentsTable = ({ students, onAddStudent, onEditStudent, onDeleteStudent,
       <table className="min-w-full">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fee Details</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fee Details</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {students.length === 0 ? (
             <tr>
-              <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
-                <UsersIcon className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              <td colSpan="5" className="px-4 py-6 text-center text-gray-500">
+                <UsersIcon className="w-10 h-10 text-gray-300 mx-auto mb-2" />
                 <p>No students enrolled yet.</p>
                 <button
                   onClick={onAddStudent}
@@ -596,7 +594,7 @@ const StudentsTable = ({ students, onAddStudent, onEditStudent, onDeleteStudent,
               const pending = (student.totalFee || 0) - (student.paidAmount || 0);
               return (
                 <tr key={student._id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <button
                       onClick={() => onViewStudent(student)}
                       className="text-sm font-medium text-indigo-600 hover:text-indigo-900 hover:underline text-left"
@@ -607,7 +605,7 @@ const StudentsTable = ({ students, onAddStudent, onEditStudent, onDeleteStudent,
                       Joined: {format(new Date(student.joinDate), "dd MMM yyyy")}
                     </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-500 mb-1">
                       <EnvelopeIcon className="w-4 h-4 mr-1" />
                       {student.email}
@@ -617,7 +615,7 @@ const StudentsTable = ({ students, onAddStudent, onEditStudent, onDeleteStudent,
                       {student.phone}
                     </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <div className="text-sm">
                       <div className="flex justify-between gap-2">
                         <span className="text-gray-600">Total:</span>
@@ -633,10 +631,10 @@ const StudentsTable = ({ students, onAddStudent, onEditStudent, onDeleteStudent,
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     {getFeeStatusBadge(student)}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
                       {pending > 0 && (
                         <button
@@ -744,10 +742,10 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
-        <div className="p-6 border-b">
+      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-5 border-b">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold text-gray-800">
+            <h3 className="text-lg font-bold text-gray-800">
               {course ? "Edit Course" : "Create New Course"}
             </h3>
             <button
@@ -755,12 +753,12 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
               className="text-gray-400 hover:text-gray-600"
               disabled={loading}
             >
-              <XMarkIcon className="w-6 h-6" />
+              <XMarkIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Course Title *</label>
             <input
@@ -771,7 +769,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
               placeholder="Enter course title"
               required
               minLength="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               disabled={loading}
             />
           </div>
@@ -786,7 +784,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
               required
               minLength="10"
               rows="2"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               disabled={loading}
             />
           </div>
@@ -801,7 +799,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
               required
               minLength="10"
               rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               disabled={loading}
             />
           </div>
@@ -815,7 +813,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
                 value={formData.startDate}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
                 disabled={loading}
               />
             </div>
@@ -827,7 +825,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
                 value={formData.endDate}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
                 disabled={loading}
               />
             </div>
@@ -842,7 +840,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
                 value={formData.category}
                 onChange={handleChange}
                 placeholder="Course category"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
                 disabled={loading}
               />
             </div>
@@ -856,7 +854,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
                 placeholder="Maximum students"
                 min="1"
                 max="1000"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
                 disabled={loading}
               />
             </div>
@@ -873,7 +871,7 @@ const CourseModal = ({ show, onClose, course, onSave }) => {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center disabled:opacity-50"
+              className="px-5 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors flex items-center disabled:opacity-50"
               disabled={loading}
             >
               {loading ? (
@@ -951,10 +949,10 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
-        <div className="p-6 border-b">
+      <div className="bg-white rounded-lg shadow-lg max-w-lg w-full">
+        <div className="p-5 border-b">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold text-gray-800">
+            <h3 className="text-lg font-bold text-gray-800">
               {student ? "Edit Student" : "Add New Student"}
             </h3>
             <button
@@ -962,12 +960,12 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
               className="text-gray-400 hover:text-gray-600"
               disabled={loading}
             >
-              <XMarkIcon className="w-6 h-6" />
+              <XMarkIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
             <input
@@ -977,7 +975,7 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
               onChange={handleChange}
               placeholder="Enter student name"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               disabled={loading}
             />
           </div>
@@ -991,7 +989,7 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
               onChange={handleChange}
               placeholder="student@example.com"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               disabled={loading}
             />
           </div>
@@ -1006,7 +1004,7 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
               placeholder="10-digit phone number"
               required
               pattern="[0-9]{10}"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               disabled={loading}
             />
           </div>
@@ -1019,7 +1017,7 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
               value={formData.joinDate}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               disabled={loading}
             />
           </div>
@@ -1035,7 +1033,7 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
                 placeholder="Total course fee"
                 required
                 min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
                 disabled={loading}
               />
             </div>
@@ -1048,7 +1046,7 @@ const StudentModal = ({ show, onClose, student, onSave }) => {
                 onChange={handleChange}
                 placeholder="Amount paid"
                 min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
                 disabled={loading}
               />
             </div>
@@ -1099,14 +1097,14 @@ const StudentDetailModal = ({ show, student, course, onClose, onSendReminder, on
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-lg flex justify-between items-center">
           <div className="flex items-center">
-            <div className="bg-white text-blue-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl mr-3">
+            <div className="bg-white text-blue-600 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg mr-3">
               {student.name.split(" ").map((n) => n[0]).join("").toUpperCase()}
             </div>
             <div>
-              <h3 className="text-xl font-bold">{student.name}</h3>
+              <h3 className="text-lg font-bold">{student.name}</h3>
               <p className="text-sm opacity-90">Student Details</p>
             </div>
           </div>
@@ -1114,12 +1112,12 @@ const StudentDetailModal = ({ show, student, course, onClose, onSendReminder, on
             onClick={onClose}
             className="text-white hover:bg-white hover:bg-opacity-20 p-1 rounded transition-colors"
           >
-            <XMarkIcon className="w-6 h-6" />
+            <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
                 <UserIcon className="w-5 h-5 mr-2 text-indigo-600" />
@@ -1150,22 +1148,22 @@ const StudentDetailModal = ({ show, student, course, onClose, onSendReminder, on
             </div>
           </div>
 
-          <div className="bg-blue-50 rounded-lg p-5">
+          <div className="bg-blue-50 rounded-lg p-4">
             <h4 className="font-semibold text-gray-700 mb-4 flex items-center">
               <CurrencyDollarIcon className="w-5 h-5 mr-2 text-blue-600" />
               Financial Overview
             </h4>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold text-gray-800">{formatCurrency(student.totalFee)}</p>
+                <p className="text-xl font-bold text-gray-800">{formatCurrency(student.totalFee)}</p>
                 <p className="text-xs text-gray-600">Total Fee</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{formatCurrency(student.paidAmount)}</p>
+                <p className="text-xl font-bold text-blue-600">{formatCurrency(student.paidAmount)}</p>
                 <p className="text-xs text-gray-600">Paid</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-red-600">{formatCurrency(pending)}</p>
+                <p className="text-xl font-bold text-red-600">{formatCurrency(pending)}</p>
                 <p className="text-xs text-gray-600">Pending</p>
               </div>
             </div>
@@ -1564,33 +1562,33 @@ const CourseManagement = () => {
   if (error) return <ErrorDisplay error={error} onRetry={loadCourses} onLogin={handleLoginRedirect} />;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full">
+      <div className="w-full">
         {/* Show empty state when no courses */}
         {(!courses || courses.length === 0) ? (
           <EmptyState onCreateCourse={() => openCourseModal()} />
         ) : (
           <>
-            {/* Analytics Dashboard */}
-            <AnalyticsDashboard analytics={analytics} />
-
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="admin-page-header mb-5">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Course Management</h1>
-                <p className="text-gray-600 mt-1">Manage your courses and student enrollments</p>
+                <h1 className="admin-page-title">Course Management</h1>
+                <p className="admin-page-subtitle">Manage your courses and student enrollments</p>
               </div>
               <button
                 onClick={() => openCourseModal()}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center transition-colors"
+                className="self-start sm:self-auto bg-violet-600 text-white px-4 py-2 text-sm font-medium rounded-lg hover:bg-violet-700 flex items-center transition-colors"
               >
-                <PlusIcon className="w-5 h-5 mr-2" />
+                <PlusIcon className="w-4 h-4 mr-1.5" />
                 New Course
               </button>
             </div>
 
+            {/* Analytics Dashboard */}
+            <AnalyticsDashboard analytics={analytics} />
+
             {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               {/* Course Selector */}
               <div className="lg:col-span-1">
                 <CourseSelector
@@ -1602,7 +1600,7 @@ const CourseManagement = () => {
 
               {/* Course Details & Students */}
               {selectedCourse && (
-                <div className="lg:col-span-3 space-y-6">
+                <div className="lg:col-span-3 space-y-4">
                   <CourseDetails
                     course={selectedCourse}
                     onEdit={() => openCourseModal(selectedCourse)}

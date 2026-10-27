@@ -128,71 +128,66 @@ const StudentAttendance = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full">
+      <div className="w-full">
         {/* ==== HEADER ==== */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Student Attendance</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <div className="mb-5">
+          <h1 className="admin-page-title">Student Attendance</h1>
+          <p className="admin-page-subtitle">
             Track and manage student attendance records in real-time
           </p>
         </div>
 
         {/* ==== STATISTICS CARDS ==== */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Records</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalRecords}</p>
+                <p className="text-xl font-bold text-gray-900">{stats.totalRecords}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Unique Students</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.uniqueStudents}</p>
+                <p className="text-xl font-bold text-gray-900">{stats.uniqueStudents}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Today's Records</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.todayRecords}</p>
+                <p className="text-xl font-bold text-gray-900">{stats.todayRecords}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* ==== FILTER BAR ==== */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             <div className="flex-1 w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Search Students
               </label>
               <div className="relative">
@@ -204,14 +199,14 @@ const StudentAttendance = () => {
                   placeholder="Enter student name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
                 />
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Filter by Date
                 </label>
                 <input
@@ -223,18 +218,18 @@ const StudentAttendance = () => {
                     const [y, m, d] = val.split("-");
                     setSelectedDate(`${d}-${m}-${y}`);
                   }}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
                 />
               </div>
 
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Filter by Course
                 </label>
                 <select
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition bg-white"
                 >
                   <option value="">All Courses</option>
                   {uniqueCourses.map((c) => (
@@ -271,9 +266,9 @@ const StudentAttendance = () => {
 
         {/* ==== STATES ==== */}
         {loading && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent"></div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <div className="inline-flex items-center justify-center mb-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-[3px] border-violet-600 border-t-transparent"></div>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Records</h3>
             <p className="text-gray-600">Fetching attendance data from the database...</p>
@@ -281,9 +276,9 @@ const StudentAttendance = () => {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center mb-6">
-            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center mb-4">
+            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -293,13 +288,13 @@ const StudentAttendance = () => {
         )}
 
         {!loading && !error && rawData.length === 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Attendance Records</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Attendance Records</h3>
             <p className="text-gray-600 max-w-md mx-auto">
               No attendance data has been recorded yet. Records will appear here once students start checking in.
             </p>
@@ -308,15 +303,15 @@ const StudentAttendance = () => {
 
         {/* ==== ATTENDANCE TABLE ==== */}
         {!loading && !error && groupedData.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {groupedData.map((group) => (
               <div key={group.date} className="border-b border-gray-200 last:border-b-0">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <div className="bg-slate-50 px-4 py-2.5 border-b border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
+                    <h2 className="text-sm font-semibold text-gray-900 mb-2 sm:mb-0">
                       {formatDisplayDate(group.date)}
                     </h2>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-700">
                       {group.rows.length} student{group.rows.length > 1 ? 's' : ''}
                     </span>
                   </div>
@@ -326,13 +321,13 @@ const StudentAttendance = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Student Name
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Course
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Check-in Time
                         </th>
                       </tr>
@@ -340,20 +335,20 @@ const StudentAttendance = () => {
                     <tbody className="divide-y divide-gray-200">
                       {group.rows.map((row, i) => (
                         <tr key={i} className="hover:bg-gray-50 transition duration-150">
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
+                              <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center text-violet-700 text-xs font-semibold mr-3">
                                 {row.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                               </div>
                               <span className="font-medium text-gray-900">{row.name}</span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               {row.course}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 font-medium">
                             {formatTime(row.timestamp)}
                           </td>
                         </tr>
@@ -367,9 +362,9 @@ const StudentAttendance = () => {
         )}
 
         {/* ==== FOOTER ==== */}
-        <div className="mt-12 text-center">
-          <div className="border-t border-gray-200 pt-8">
-            <p className="text-sm text-gray-600">
+        <div className="mt-4 text-right">
+          <div>
+            <p className="text-xs text-gray-500">
               System updated: {new Date().toLocaleString("en-IN", {
                 weekday: 'long',
                 year: 'numeric',

@@ -33,7 +33,7 @@ const ProjectIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-const CloseIcon = ({ className = "w-6 h-6" }) => (
+const CloseIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
@@ -257,17 +257,17 @@ const ProjectManagement = () => {
   return (
     <>
       <Toaster position="top-right" />
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="w-full">
+        <div className="w-full">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between">
+          <div className="mb-5">
+            <div className="admin-page-header">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Project Management</h1>
-                <p className="text-gray-600 mt-2">Manage all projects, assign teams, and track progress</p>
+                <h1 className="admin-page-title">Project Management</h1>
+                <p className="admin-page-subtitle">Manage all projects, assign teams, and track progress</p>
               </div>
-              <div className="mt-4 md:mt-0">
-                <span className="text-sm text-gray-500">
+              <div>
+                <span className="text-xs text-gray-500">
                   Last updated: {new Date().toLocaleDateString()}
                 </span>
               </div>
@@ -275,32 +275,32 @@ const ProjectManagement = () => {
           </div>
 
           {/* Enhanced Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-7 gap-3 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-7 gap-3 mb-4">
             <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
               <div className="text-xs text-gray-500 mb-1">Total Projects</div>
-              <div className="text-xl font-bold text-gray-800">{stats.total}</div>
+              <div className="text-lg font-bold text-gray-800">{stats.total}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-3 border border-green-200">
               <div className="text-xs text-gray-500 mb-1">In Progress</div>
-              <div className="text-xl font-bold text-green-600">{stats.inProgress}</div>
+              <div className="text-lg font-bold text-green-600">{stats.inProgress}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-3 border border-blue-200">
               <div className="text-xs text-gray-500 mb-1">Completed</div>
-              <div className="text-xl font-bold text-blue-600">{stats.completed}</div>
+              <div className="text-lg font-bold text-blue-600">{stats.completed}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-3 border border-yellow-200">
               <div className="text-xs text-gray-500 mb-1">On Hold</div>
-              <div className="text-xl font-bold text-yellow-600">{stats.onHold}</div>
+              <div className="text-lg font-bold text-yellow-600">{stats.onHold}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-3 border border-purple-200">
               <div className="text-xs text-gray-500 mb-1">Total Budget</div>
-              <div className="text-xl font-bold text-purple-600">₹{stats.totalBudget.toLocaleString()}</div>
+              <div className="text-lg font-bold text-purple-600">₹{stats.totalBudget.toLocaleString()}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-3 border border-indigo-200 col-span-2">
               <div className="flex justify-between items-center">
                 <div>
                   <div className="text-xs text-gray-500 mb-1">Task Completion</div>
-                  <div className="text-xl font-bold text-indigo-600">
+                  <div className="text-lg font-bold text-indigo-600">
                     {stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0}%
                   </div>
                 </div>
@@ -337,7 +337,7 @@ const ProjectManagement = () => {
                 });
                 setIsAddOpen(true);
               }}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-colors"
+              className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-colors"
             >
               <ProjectIcon className="w-4 h-4" /> New Project
             </button>
@@ -346,12 +346,12 @@ const ProjectManagement = () => {
           {/* Compact Table */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {loading ? (
-              <div className="p-12 text-center">
+              <div className="p-8 text-center">
                 <div className="animate-spin h-8 w-8 border-3 border-indigo-600 rounded-full border-t-transparent mx-auto"></div>
                 <p className="mt-3 text-gray-500 text-sm">Loading projects...</p>
               </div>
             ) : projects.length === 0 ? (
-              <div className="p-12 text-center">
+              <div className="p-8 text-center">
                 <div className="text-gray-400 mb-3">No projects found</div>
                 <button
                   onClick={() => setIsAddOpen(true)}
@@ -365,15 +365,15 @@ const ProjectManagement = () => {
                 <table className="w-full min-w-[1000px]">
                   <thead className="bg-gray-50">
                     <tr className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-b">
-                      <th className="px-4 py-3">Project Name</th>
-                      <th className="px-4 py-3">Client</th>
-                      <th className="px-4 py-3">Timeline</th>
-                      <th className="px-4 py-3">Progress</th>
-                      <th className="px-4 py-3">Tasks</th>
-                      <th className="px-4 py-3">Budget</th>
-                      <th className="px-4 py-3">Priority</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Actions</th>
+                      <th className="px-4 py-2">Project Name</th>
+                      <th className="px-4 py-2">Client</th>
+                      <th className="px-4 py-2">Timeline</th>
+                      <th className="px-4 py-2">Progress</th>
+                      <th className="px-4 py-2">Tasks</th>
+                      <th className="px-4 py-2">Budget</th>
+                      <th className="px-4 py-2">Priority</th>
+                      <th className="px-4 py-2">Status</th>
+                      <th className="px-4 py-2">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -384,7 +384,7 @@ const ProjectManagement = () => {
                       return (
                         <tr key={p._id} className="hover:bg-gray-50 transition-colors">
                           {/* Project Name */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="min-w-[180px]">
                               <div className="font-semibold text-gray-800 text-sm">{p.name}</div>
                               <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
@@ -395,14 +395,14 @@ const ProjectManagement = () => {
                           </td>
 
                           {/* Client */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="text-sm text-gray-700 truncate max-w-[120px]" title={p.client?.name || "N/A"}>
                               {p.client?.name || "N/A"}
                             </div>
                           </td>
 
                           {/* Timeline */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="text-xs">
                               <div className="flex items-center gap-1 text-gray-700">
                                 <CalendarIcon className="w-3 h-3" />
@@ -415,11 +415,11 @@ const ProjectManagement = () => {
                           </td>
 
                           {/* Progress */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="w-24">
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
                                 <div
-                                  className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
+                                  className="bg-violet-600 h-1.5 rounded-full transition-all duration-300"
                                   style={{ width: `${progressWidth}%` }}
                                 ></div>
                               </div>
@@ -428,7 +428,7 @@ const ProjectManagement = () => {
                           </td>
 
                           {/* Tasks */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="flex items-center gap-2">
                               <TaskIcon className="w-3 h-3 text-gray-400" />
                               <span className="text-sm">
@@ -443,12 +443,12 @@ const ProjectManagement = () => {
                           </td>
 
                           {/* Budget */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="font-semibold text-green-600 text-sm">₹{Number(p.budget || 0).toLocaleString()}</div>
                           </td>
 
                           {/* Priority */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="flex items-center gap-1">
                               <PriorityIcon priority={p.priority} className="w-3 h-3" />
                               <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityColor(p.priority)}`}>
@@ -458,14 +458,14 @@ const ProjectManagement = () => {
                           </td>
 
                           {/* Status */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${getStatusColor(p.status)}`}>
                               {p.status}
                             </span>
                           </td>
 
                           {/* Actions */}
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => openEditModal(p)}
@@ -502,10 +502,10 @@ const ProjectManagement = () => {
           {/* ADD / EDIT MODAL */}
           {(isAddOpen || isEditOpen) && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div className="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">
+                    <h2 className="text-lg font-bold text-gray-800">
                       {isEditOpen ? "Edit Project" : "Add New Project"}
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
@@ -520,11 +520,11 @@ const ProjectManagement = () => {
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <form onSubmit={handleSubmit} className="p-5 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Project Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
                         Project Name <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -532,21 +532,21 @@ const ProjectManagement = () => {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                         placeholder="Enter project name"
                       />
                     </div>
 
                     {/* Client */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
                         Client <span className="text-red-500">*</span>
                       </label>
                       <select
                         required
                         value={formData.client}
                         onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                       >
                         <option value="">Select Client</option>
                         {clients.map((c) => (
@@ -557,7 +557,7 @@ const ProjectManagement = () => {
 
                     {/* Budget */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
                         Budget (₹) <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -566,18 +566,18 @@ const ProjectManagement = () => {
                         min="0"
                         value={formData.budget}
                         onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                         placeholder="Enter budget"
                       />
                     </div>
 
                     {/* Status */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
                       <select
                         value={formData.status}
                         onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                       >
                         {["Planning", "In Progress", "On Hold", "Completed", "Cancelled"].map((s) => (
                           <option key={s} value={s}>{s}</option>
@@ -587,7 +587,7 @@ const ProjectManagement = () => {
 
                     {/* Start Date */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
                         Start Date <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -595,13 +595,13 @@ const ProjectManagement = () => {
                         required
                         value={formData.startDate}
                         onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                       />
                     </div>
 
                     {/* End Date */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
                         End Date <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -610,17 +610,17 @@ const ProjectManagement = () => {
                         value={formData.endDate}
                         min={formData.startDate}
                         onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                       />
                     </div>
 
                     {/* Priority */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Priority</label>
                       <select
                         value={formData.priority}
                         onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                       >
                         {["Low", "Medium", "High", "Urgent"].map((p) => (
                           <option key={p} value={p}>{p}</option>
@@ -630,7 +630,7 @@ const ProjectManagement = () => {
 
                     {/* Progress */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Progress (%)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Progress (%)</label>
                       <input
                         type="range"
                         min="0"
@@ -648,27 +648,27 @@ const ProjectManagement = () => {
 
                     {/* Total Tasks */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Total Tasks</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Total Tasks</label>
                       <input
                         type="number"
                         min="0"
                         value={formData.totalTasks}
                         onChange={(e) => setFormData({ ...formData, totalTasks: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                         placeholder="Total tasks"
                       />
                     </div>
 
                     {/* Tasks Completed */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Tasks Completed</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Tasks Completed</label>
                       <input
                         type="number"
                         min="0"
                         max={formData.totalTasks}
                         value={formData.tasksCompleted}
                         onChange={(e) => setFormData({ ...formData, tasksCompleted: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                         placeholder="Completed tasks"
                       />
                     </div>
@@ -676,12 +676,12 @@ const ProjectManagement = () => {
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
                     <textarea
                       rows={3}
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
                       placeholder="Project description..."
                     />
                   </div>
@@ -696,16 +696,16 @@ const ProjectManagement = () => {
                         {formData.teamMembers.length} selected
                       </span>
                     </div>
-                    <div className="border border-gray-300 rounded-xl p-4 bg-gray-50">
+                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
                       {employees.length === 0 ? (
-                        <p className="text-center text-gray-500 py-4">No employees available</p>
+                        <p className="text-center text-gray-500 py-3">No employees available</p>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                           {employees.map((emp) => (
                             <label
                               key={emp._id}
                               className={`flex items-center space-x-3 p-3 bg-white rounded-lg border transition-all cursor-pointer ${formData.teamMembers.includes(emp._id)
-                                  ? "border-indigo-500 bg-indigo-50"
+                                  ? "border-violet-500 bg-indigo-50"
                                   : "border-gray-200 hover:border-indigo-300"
                                 }`}
                             >
@@ -725,7 +725,7 @@ const ProjectManagement = () => {
                                     }));
                                   }
                                 }}
-                                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                className="w-4 h-4 text-indigo-600 rounded focus:ring-violet-500"
                               />
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
@@ -744,7 +744,7 @@ const ProjectManagement = () => {
                   </div>
 
                   {/* Form Actions */}
-                  <div className="flex justify-end gap-3 pt-6 border-t">
+                  <div className="flex justify-end gap-3 pt-4 border-t">
                     <button
                       type="button"
                       onClick={() => { setIsAddOpen(false); setIsEditOpen(false); }}
@@ -754,7 +754,7 @@ const ProjectManagement = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
+                      className="px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
                     >
                       {isEditOpen ? "Update Project" : "Create Project"}
                     </button>
